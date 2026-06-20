@@ -1,0 +1,34 @@
+# ─── Сборочные артефакты (НЕ коммитим — место экономим) ───
+# .NET / WinUI / WPF
+[Bb]in/
+[Oo]bj/
+publish-final/
+portable-out/
+installer-app/
+win-unpacked/
+.vs/
+*.user
+
+# Electron / Node
+node_modules/
+dist/
+build/
+
+# Готовые бинарники и пакеты
+*.exe
+*.dll
+*.pdb
+*.7z
+*.zip
+*.msi
+*.blockmap
+builder-debug.yml
+
+# Логи и мусор
+*.log
+Thumbs.db
+.DS_Store
+
+# Локальные служебные папки ассистентов
+.remember/
+.claude/

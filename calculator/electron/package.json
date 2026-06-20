@@ -1,0 +1,44 @@
+{
+  "name": "calc-pro",
+  "version": "1.0.0",
+  "description": "Calc Pro — liquid glass calculator",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable --x64",
+    "build-installer": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.alexey.calcpro",
+    "productName": "Calc Pro",
+    "files": [
+      "main.js",
+      "preload.js",
+      "calc-pro.html",
+      "build/**/*",
+      "node_modules/**/*",
+      "!node_modules/.cache",
+      "!winui/**/*",
+      "!dist/**/*",
+      "!.remember/**/*",
+      "!.claude/**/*",
+      "!**/*.md",
+      "!package-lock.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": ["portable", "nsis"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
