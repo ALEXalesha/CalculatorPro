@@ -1,0 +1,64 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Outer drop-shadow used by every glass panel. Soft, downward, dark. -->
+    <DropShadowEffect x:Key="PanelShadow"
+                      Color="#000000"
+                      BlurRadius="32"
+                      ShadowDepth="8"
+                      Opacity="0.45"
+                      Direction="270" />
+
+    <!--
+        GlassPanel = ContentControl whose template draws:
+          1. Main glass background border (rounded, semi-transparent, blurred-look)
+          2. Specular highlight overlay (top-down white gradient at 10% → transparent)
+          3. ContentPresenter on top of both
+    -->
+    <Style x:Key="GlassPanel" TargetType="ContentControl">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid>
+                        <Border CornerRadius="22"
+                                Background="{StaticResource GlassBg}"
+                                BorderBrush="{StaticResource GlassBorder}"
+                                BorderThickness="1"
+                                Effect="{StaticResource PanelShadow}" />
+
+                        <!-- Specular ::before -->
+                        <Border CornerRadius="22"
+                                Background="{StaticResource PanelSpecular}"
+                                IsHitTestVisible="False" />
+
+                        <ContentPresenter Margin="{TemplateBinding Padding}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Smaller / softer variant for nested panels (display, mem-row). -->
+    <Style x:Key="GlassPanelSoft" TargetType="ContentControl" BasedOn="{StaticResource GlassPanel}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Grid>
+                        <Border CornerRadius="16"
+                                Background="{StaticResource DisplayBg}"
+                                BorderBrush="{StaticResource GlassBorder}"
+                                BorderThickness="1" />
+                        <Border CornerRadius="16"
+                                Background="{StaticResource PanelSpecular}"
+                                IsHitTestVisible="False" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

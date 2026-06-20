@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a2a2a"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="orange" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffb347"/>
+      <stop offset="100%" stop-color="#ff8800"/>
+    </linearGradient>
+    <linearGradient id="grey" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c8c8c8"/>
+      <stop offset="100%" stop-color="#9a9a9a"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4a4a4a"/>
+      <stop offset="100%" stop-color="#2a2a2a"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="25%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#ff5e8a" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#ff5e8a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="80%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#4facfe" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#4facfe" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="6"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.4"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- скруглённый фон в стиле iOS app icon -->
+  <rect width="1024" height="1024" rx="230" ry="230" fill="url(#bg)"/>
+  <rect width="1024" height="1024" rx="230" ry="230" fill="url(#glow1)"/>
+  <rect width="1024" height="1024" rx="230" ry="230" fill="url(#glow2)"/>
+
+  <!-- сетка кнопок 4x4 как в калькуляторе -->
+  <g filter="url(#shadow)">
+    <!-- ряд 1: серые верх -->
+    <circle cx="220" cy="380" r="90" fill="url(#grey)"/>
+    <circle cx="430" cy="380" r="90" fill="url(#grey)"/>
+    <circle cx="640" cy="380" r="90" fill="url(#grey)"/>
+    <circle cx="850" cy="380" r="90" fill="url(#orange)"/>
+
+    <!-- ряд 2 -->
+    <circle cx="220" cy="560" r="90" fill="url(#dark)"/>
+    <circle cx="430" cy="560" r="90" fill="url(#dark)"/>
+    <circle cx="640" cy="560" r="90" fill="url(#dark)"/>
+    <circle cx="850" cy="560" r="90" fill="url(#orange)"/>
+
+    <!-- ряд 3 -->
+    <circle cx="220" cy="740" r="90" fill="url(#dark)"/>
+    <circle cx="430" cy="740" r="90" fill="url(#dark)"/>
+    <circle cx="640" cy="740" r="90" fill="url(#dark)"/>
+    <circle cx="850" cy="740" r="90" fill="url(#orange)"/>
+  </g>
+
+  <!-- Символы на оранжевых кнопках -->
+  <g fill="white" font-family="-apple-system, SF Pro Display, sans-serif" font-weight="300" text-anchor="middle">
+    <!-- ÷ -->
+    <text x="850" y="412" font-size="110">÷</text>
+    <!-- × -->
+    <text x="850" y="595" font-size="100">×</text>
+    <!-- − -->
+    <text x="850" y="775" font-size="120">−</text>
+  </g>
+
+  <!-- Символы на серых кнопках -->
+  <g fill="#1a1a1a" font-family="-apple-system, SF Pro Display, sans-serif" font-weight="400" text-anchor="middle">
+    <text x="220" y="420" font-size="80">AC</text>
+    <text x="430" y="420" font-size="90">±</text>
+    <text x="640" y="420" font-size="90">%</text>
+  </g>
+
+  <!-- Цифры на тёмных кнопках -->
+  <g fill="white" font-family="-apple-system, SF Pro Display, sans-serif" font-weight="300" text-anchor="middle">
+    <text x="220" y="595" font-size="100">7</text>
+    <text x="430" y="595" font-size="100">8</text>
+    <text x="640" y="595" font-size="100">9</text>
+
+    <text x="220" y="775" font-size="100">4</text>
+    <text x="430" y="775" font-size="100">5</text>
+    <text x="640" y="775" font-size="100">6</text>
+  </g>
+
+  <!-- Блик сверху для liquid glass эффекта -->
+  <rect x="80" y="80" width="864" height="200" rx="100" ry="100" fill="white" opacity="0.06"/>
+</svg>
