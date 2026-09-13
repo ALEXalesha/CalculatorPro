@@ -1,0 +1,61 @@
+{
+  "name": "calculator-ios26",
+  "version": "1.1.0",
+  "description": "Calculator iOS 26 — Liquid Glass Windows app",
+  "author": "ALEXalesha",
+  "license": "MIT",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "electron e2e/smoke.js",
+    "dist": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "43.0.0",
+    "electron-builder": "^25.1.8",
+    "fast-check": "^3.23.2"
+  },
+  "build": {
+    "appId": "com.alexeystepnov.calculator",
+    "productName": "Calculator iOS 26",
+    "copyright": "Copyright (c) 2026 ALEXalesha",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "assets/icon.ico"
+    ],
+    "electronLanguages": [
+      "en-US",
+      "ru"
+    ],
+    "compression": "maximum",
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "portable": {
+      "artifactName": "CalculatorIOS26-${version}-Portable.${ext}"
+    },
+    "nsis": {
+      "artifactName": "CalculatorIOS26-${version}-Setup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Calculator",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": true
+    }
+  }
+}

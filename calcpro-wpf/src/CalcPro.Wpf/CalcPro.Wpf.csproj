@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <LangVersion>12.0</LangVersion>
+    <RootNamespace>CalcPro.Wpf</RootNamespace>
+    <AssemblyName>CalcPro</AssemblyName>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    <UseLayoutRounding>true</UseLayoutRounding>
+
+    <Version>1.1.0</Version>
+    <Product>Calc Pro</Product>
+    <Company>ALEXalesha</Company>
+    <Copyright>Copyright (c) 2026 ALEXalesha</Copyright>
+  </PropertyGroup>
+
+  <!--
+    Portable build (see build.ps1 in the repo root):
+      dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=true
+    Single-file bundles are compressed; trimming stays off because WPF relies on reflection.
+  -->
+  <PropertyGroup Condition="'$(PublishSingleFile)' == 'true'">
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en;ru</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="WPF-UI" Version="3.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CalcPro.Core\CalcPro.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\make-icon.py" />
+  </ItemGroup>
+
+</Project>

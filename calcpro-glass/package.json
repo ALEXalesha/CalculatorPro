@@ -1,0 +1,58 @@
+{
+  "name": "calcpro-glass",
+  "version": "1.1.0",
+  "description": "Calc Pro Glass — liquid glass calculator with Standard, Scientific and Fraction modes",
+  "author": "ALEXalesha",
+  "license": "MIT",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "test:e2e": "electron e2e/smoke.js",
+    "dist": "electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "43.0.0",
+    "electron-builder": "^25.1.8",
+    "fast-check": "^3.23.2"
+  },
+  "build": {
+    "appId": "com.alexey.calcpro",
+    "productName": "Calc Pro Glass",
+    "copyright": "Copyright (c) 2026 ALEXalesha",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "build/icon.ico"
+    ],
+    "electronLanguages": [
+      "en-US",
+      "ru"
+    ],
+    "compression": "maximum",
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "portable", "arch": ["x64"] },
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "portable": {
+      "artifactName": "CalcProGlass-${version}-Portable.${ext}"
+    },
+    "nsis": {
+      "artifactName": "CalcProGlass-${version}-Setup.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Calc Pro Glass"
+    }
+  }
+}

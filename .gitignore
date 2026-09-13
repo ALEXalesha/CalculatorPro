@@ -1,34 +1,18 @@
-# ─── Сборочные артефакты (НЕ коммитим — место экономим) ───
-# .NET / WinUI / WPF
-[Bb]in/
-[Oo]bj/
-publish-final/
-portable-out/
-installer-app/
-win-unpacked/
-.vs/
-*.user
-
-# Electron / Node
-node_modules/
+# Build output (rebuilt by build.ps1 — never committed)
+bin/
+obj/
 dist/
-build/
+node_modules/
+TestResults/
+*.user
+.vs/
+.idea/
 
-# Готовые бинарники и пакеты
-*.exe
-*.dll
-*.pdb
-*.7z
-*.zip
-*.msi
-*.blockmap
-builder-debug.yml
-
-# Логи и мусор
-*.log
-Thumbs.db
-.DS_Store
-
-# Локальные служебные папки ассистентов
+# Assistant / session folders
 .remember/
 .claude/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
