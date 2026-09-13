@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calc Pro</title>
+<style>
+/* ===== Reset ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== Liquid-Glass Tokens (verbatim from Paint Pro) ===== */
+:root {
+  --glass-bg:           rgba(255,255,255,0.08);
+  --glass-bg-strong:    rgba(255,255,255,0.14);
+  --glass-bg-soft:      rgba(255,255,255,0.05);
+  --glass-border:       rgba(255,255,255,0.18);
+  --glass-border-strong:rgba(255,255,255,0.32);
+  --glass-highlight:    rgba(255,255,255,0.45);
+  --glass-shadow:       0 8px 32px rgba(0,0,0,0.35);
+  --glass-inset:        inset 0 1px 0 rgba(255,255,255,0.35),
+                        inset 0 -1px 0 rgba(0,0,0,0.15);
+  --blur:               blur(28px) saturate(190%);
+  --blur-strong:        blur(40px) saturate(220%);
+
+  --text:               #f4f4f8;
+  --text-dim:           rgba(244,244,248,0.62);
+
+  --accent:             #5b8def;
+  --accent-2:           #9d5bef;
+  --accent-grad:        linear-gradient(135deg,#5b8def 0%, #9d5bef 100%);
+  --accent-glow:        0 0 24px rgba(91,141,239,0.55);
+
+  /* Apple calculator palette */
+  --apple-orange:       linear-gradient(135deg, #ff9f0a 0%, #ff7a00 100%);
+  --apple-orange-hover: linear-gradient(135deg, #ffb340 0%, #ff8a1a 100%);
+  --apple-digit:        rgba(60,60,75,0.55);
+  --apple-digit-hover:  rgba(80,80,95,0.65);
+  --apple-util:         rgba(165,165,175,0.55);
+  --apple-util-hover:   rgba(190,190,200,0.7);
+  --apple-del:          rgba(255,91,91,0.45);
+  --apple-del-hover:    rgba(255,120,120,0.6);
+}
+
+/* ===== Body & Background ===== */
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  color: var(--text);
+  user-select: none;
+  -webkit-user-select: none;
+  font-variant-numeric: tabular-nums;
+  background: transparent;
+}
+
+body {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* App-shell: exact background from CalculatorNEW */
+.app-shell {
+  position: fixed; inset: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 10%, #ff6b9d 0%, transparent 35%),
+    radial-gradient(circle at 80% 20%, #4facfe 0%, transparent 40%),
+    radial-gradient(circle at 50% 80%, #ff9a56 0%, transparent 45%),
+    radial-gradient(circle at 90% 90%, #a78bfa 0%, transparent 35%),
+    #1a0a2e;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 -1px 0 rgba(0,0,0,0.35),
+    0 18px 60px rgba(0,0,0,0.55);
+  display: flex;
+  flex-direction: column;
+}
+/* Inner ring highlight (also from NEW) */
+.app-shell::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: 26px;
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255,255,255,0.25),
+    inset 0 0 12px rgba(255,255,255,0.06);
+  z-index: 250;
+}
+
+/* Drag zone: separate from header so it does not block win-controls.
+   z-index MUST be above .titlebar (3) so the drag region wins hit-testing
+   over the titlebar text strip, while staying below .win-controls (1000)
+   so the close/minimize/history buttons keep receiving clicks. */
+.drag-zone {
+  position: absolute;
+  top: 0; left: 0;
+  height: 38px;
+  right: 90px; /* reserve space for win-controls */
+  -webkit-app-region: drag;
+  z-index: 5;
+}
+
+/* Window controls (top-right, floating above app-shell) */
+.win-controls {
+  position: absolute;
+  top: 8px; right: 10px;
+  display: flex; gap: 6px;
+  z-index: 1000;
+  -webkit-app-region: no-drag;
+  pointer-events: auto;
+}
+.win-btn {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; line-height: 1;
+  transition: background 0.15s ease;
+  padding: 0;
+  outline: none;
+}
+.win-btn svg { pointer-events: none; }
+.win-btn:hover { background: rgba(255,255,255,0.22); }
+.win-btn.close:hover { background: rgba(255, 80, 80, 0.85); }
+.win-btn.history.active { background: rgba(91,141,239,0.55); }
+
+/* ===== Header (drag handled by .drag-zone overlay, which sits above) ===== */
+.titlebar {
+  position: relative; z-index: 3;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 90px 0 14px; /* right padding reserves space for win-controls */
+  flex-shrink: 0;
+}
+
+.titlebar-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text);
+  opacity: 0.95;
+  text-transform: none;
+}
+
+.titlebar-controls {
+  display: none; /* legacy: window controls moved out to .win-controls */
+}
+
+.tb-btn {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: var(--text-dim);
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s;
+  line-height: 1;
+  box-shadow: var(--glass-inset);
+  padding: 0;
+}
+
+.tb-btn svg { width: 12px; height: 12px; display: block; }
+
+.tb-btn:hover {
+  background: var(--glass-bg-strong);
+  color: var(--text);
+  border-color: var(--glass-border-strong);
+  transform: translateY(-1px);
+}
+
+.tb-btn.close:hover {
+  background: rgba(255, 80, 80, 0.55);
+  border-color: rgba(255, 120, 120, 0.6);
+  color: #fff;
+}
+.tb-btn.minimize:hover {
+  background: rgba(255, 190, 50, 0.45);
+  border-color: rgba(255, 210, 80, 0.5);
+  color: #fff;
+}
+.tb-btn.history.active {
+  background: rgba(91,141,239,0.45);
+  border-color: rgba(91,141,239,0.6);
+  color: #fff;
+}
+
+/* ===== Mode Tabs ===== */
+.mode-tabs-wrap {
+  position: relative; z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 14px 6px;
+  flex-shrink: 0;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-inset);
+  flex: 1;
+}
+
+.mode-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 6px 4px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: clamp(9.5px, 2.2vw, 11px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s, box-shadow 0.25s;
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+
+.mode-tab.active {
+  background: var(--accent-grad);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 14px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.mode-tab:not(.active):hover {
+  background: var(--glass-bg);
+  color: var(--text);
+}
+
+.angle-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  display: none;
+  box-shadow: var(--glass-inset);
+  font-family: inherit;
+}
+
+.angle-pill.visible { display: block; }
+
+.angle-pill:hover {
+  background: var(--glass-bg);
+  color: var(--text);
+  border-color: var(--glass-border-strong);
+}
+
+.angle-pill.rad {
+  background: rgba(91,141,239,0.25);
+  color: #c5d9ff;
+  border-color: rgba(91,141,239,0.45);
+}
+
+/* ===== Display (no card, just floating text) ===== */
+.calc-display {
+  position: relative; z-index: 2;
+  padding: clamp(8px,1.6vh,18px) clamp(14px,2.4vw,24px) clamp(6px,1vh,10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: clamp(80px, 14vh, 130px);
+  flex-shrink: 0;
+  transition: filter 0.3s ease;
+}
+
+.calc-display.error-glow .main-result { color: #ff8585; text-shadow: 0 0 20px rgba(255,80,80,0.55); }
+
+.history-line {
+  font-size: clamp(11px, 1.8vh, 16px);
+  color: var(--text-dim);
+  text-align: right;
+  min-height: 18px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.main-result {
+  font-size: clamp(32px, 7vh, 64px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  text-align: right;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.05;
+  color: var(--text);
+  text-shadow: 0 2px 16px rgba(0,0,0,0.4);
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease, font-size 0.2s ease;
+}
+
+.main-result.animate-in {
+  animation: resultIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes resultIn {
+  0%   { transform: translateY(18px); opacity: 0; }
+  100% { transform: translateY(0);    opacity: 1; }
+}
+
+.fraction-line {
+  font-size: 18px;
+  color: var(--accent);
+  text-align: right;
+  min-height: 22px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-shadow: 0 0 12px rgba(91,141,239,0.45);
+}
+.fraction-line.visible { opacity: 1; }
+
+/* ===== Stacked-fraction rendering (fractions mode) ===== */
+.frac-term {
+  display: inline-flex; align-items: center;
+  vertical-align: middle;
+}
+.frac-whole { font-size: 1em; padding: 0 2px; }
+.frac-gap { width: 0.25em; display: inline-block; }
+.frac-stack {
+  display: inline-flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  line-height: 1; font-size: 0.55em; vertical-align: middle;
+  padding: 0 4px;
+}
+.frac-num, .frac-den { padding: 1px 6px; min-width: 0.6em; text-align: center; }
+.frac-bar {
+  width: 100%; height: 2px; background: currentColor;
+  margin: 2px 0; border-radius: 1px; min-width: 22px;
+}
+.frac-active {
+  background: rgba(91,141,239,0.28);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(91,141,239,0.5), 0 0 12px rgba(91,141,239,0.4);
+  animation: fracBlink 1s ease-in-out infinite;
+}
+@keyframes fracBlink {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(91,141,239,0.5), 0 0 12px rgba(91,141,239,0.4); }
+  50%      { box-shadow: 0 0 0 1px rgba(91,141,239,0.75), 0 0 18px rgba(91,141,239,0.65); }
+}
+.frac-placeholder { color: var(--text-dim); font-weight: 300; opacity: 0.55; }
+.frac-op { padding: 0 8px; color: var(--accent); font-weight: 500; }
+.main-fraction { display: inline-flex; align-items: center; }
+.main-decimal { display: inline-block; }
+.btn-frac { font-weight: 500; }
+
+.main-result.shrink-1 { font-size: clamp(28px, 5.6vh, 52px); }
+.main-result.shrink-2 { font-size: clamp(24px, 4.6vh, 40px); }
+.main-result.shrink-3 { font-size: clamp(20px, 3.6vh, 30px); }
+.main-result.shrink-4 { font-size: clamp(16px, 2.8vh, 22px); }
+
+/* ===== Keys grid (no card) ===== */
+.calc-keys {
+  position: relative; z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(4px, 1vh, 10px);
+  /* Side/bottom padding keeps the outer buttons inside the window's 26px rounded
+     corners; with less, the corners of "+/-" and "=" were clipped. */
+  padding: clamp(6px, 1.4vh, 12px) 16px 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+  align-content: stretch;
+}
+
+.calc-keys.scientific {
+  gap: clamp(3px, 0.9vh, 7px);
+  padding: clamp(4px, 1vh, 8px) 14px 16px;
+}
+
+/* ===== Apple-style Liquid-Glass Buttons ===== */
+.btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--glass-border);
+  background: var(--apple-digit);
+  color: var(--text);
+  font-size: clamp(15px, 3.2vh, 28px);
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.15s cubic-bezier(0.34,1.56,0.64,1),
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    filter 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+  letter-spacing: -0.01em;
+  backdrop-filter: blur(48px) saturate(200%);
+  -webkit-backdrop-filter: blur(48px) saturate(200%);
+  box-shadow:
+    var(--glass-inset),
+    0 4px 14px rgba(0,0,0,0.28);
+  font-family: inherit;
+  padding: 0;
+  line-height: 1;
+}
+
+.calc-keys.scientific .btn {
+  font-size: clamp(13px, 2.4vh, 22px);
+  border-radius: 999px;
+}
+
+.btn:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  border-color: var(--glass-border-strong);
+  box-shadow:
+    var(--glass-inset),
+    0 6px 18px rgba(0,0,0,0.38);
+}
+
+.btn:active {
+  transform: scale(0.94);
+  transition-duration: 0.08s;
+  filter: brightness(0.95);
+}
+
+/* Digit buttons (default) */
+.btn-digit {
+  background: var(--apple-digit);
+  font-weight: 400;
+  color: #fff;
+}
+.btn-digit:hover { background: var(--apple-digit-hover); }
+
+/* Operator buttons (orange) */
+.btn-op {
+  background: var(--apple-orange);
+  border-color: rgba(255,180,80,0.45);
+  color: #fff;
+  font-size: clamp(17px, 3.6vh, 32px);
+  font-weight: 500;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    inset 0 -1px 0 rgba(0,0,0,0.1),
+    0 4px 18px rgba(255,140,40,0.42);
+}
+.btn-op:hover {
+  background: var(--apple-orange-hover);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.1),
+    0 6px 24px rgba(255,160,40,0.55);
+}
+.btn-op.active-op {
+  background: linear-gradient(135deg, #ffffff 0%, #fff0d6 100%);
+  color: #ff8a1a;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.85),
+    0 4px 22px rgba(255,160,40,0.65);
+}
+.calc-keys.scientific .btn-op { font-size: clamp(15px, 2.8vh, 24px); }
+
+/* Equals = same orange */
+.btn-eq {
+  background: var(--apple-orange);
+  border-color: rgba(255,180,80,0.45);
+  color: #fff;
+  font-size: clamp(17px, 3.6vh, 32px);
+  font-weight: 500;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.45),
+    0 4px 18px rgba(255,140,40,0.42);
+}
+.btn-eq:hover {
+  background: var(--apple-orange-hover);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    0 6px 24px rgba(255,160,40,0.6);
+}
+.calc-keys.scientific .btn-eq { font-size: clamp(15px, 2.8vh, 24px); }
+
+/* Top-row utility (AC, +/-, %) — light glass, BLACK text */
+.btn-util {
+  background: var(--apple-util);
+  color: #1a1a1a;
+  font-weight: 500;
+  border-color: rgba(255,255,255,0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(0,0,0,0.05),
+    0 4px 14px rgba(0,0,0,0.22);
+}
+.btn-util:hover { background: var(--apple-util-hover); }
+
+/* DEL / backspace — red tint, white text */
+.btn-del {
+  background: var(--apple-del);
+  color: #fff;
+  font-weight: 500;
+  border-color: rgba(255,140,140,0.5);
+}
+.btn-del:hover { background: var(--apple-del-hover); }
+
+/* Scientific function buttons — softer dark glass, smaller */
+.btn-sci {
+  background: rgba(60,60,75,0.4);
+  color: #cfd6ff;
+  font-size: clamp(11px, 2vh, 17px);
+  font-weight: 500;
+  border-color: rgba(255,255,255,0.14);
+}
+.calc-keys.scientific .btn-sci {
+  font-size: clamp(11px, 2vh, 17px);
+}
+.btn-sci:hover { background: rgba(70,70,90,0.7); color: #fff; }
+.btn-sci.toggle-on {
+  background: rgba(91,141,239,0.4);
+  color: #fff;
+  border-color: rgba(91,141,239,0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    0 4px 18px rgba(91,141,239,0.5);
+}
+
+/* Wide zero (capsule) */
+.btn-zero {
+  grid-column: span 2;
+  border-radius: 999px;
+  justify-content: flex-start;
+  padding-left: clamp(16px, 4vw, 32px);
+}
+
+/* ===== Ripple ===== */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    rgba(255,255,255,0.55) 0%,
+    rgba(255,255,255,0.25) 35%,
+    rgba(120,180,255,0.10) 70%,
+    transparent 100%);
+  box-shadow: inset 0 0 12px rgba(255,255,255,0.4), 0 0 18px rgba(91,141,239,0.4);
+  transform: translate(-50%,-50%) scale(0);
+  animation: rippleGrow 0.65s ease-out forwards;
+  z-index: 5;
+}
+
+@keyframes rippleGrow {
+  0%   { transform: translate(-50%,-50%) scale(0);   opacity: 0.9; }
+  100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+}
+
+/* ===== Tooltip ===== */
+[data-tip] { position: relative; }
+[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute; top: calc(100% + 8px); left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20,20,30,0.85);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 6px 10px; border-radius: 8px;
+  font-size: 11px; font-weight: 500;
+  white-space: nowrap; pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+/* ===== History Panel ===== */
+.history-panel {
+  position: absolute;
+  top: 38px; right: 0; left: 0;
+  width: auto;
+  height: calc(100% - 38px);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--blur-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  border-top: 1px solid var(--glass-border-strong);
+  box-shadow: 0 -12px 40px rgba(0,0,0,0.45), var(--glass-inset);
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-panel.open { transform: translateX(0); }
+
+.history-header {
+  padding: 12px 90px 12px 14px; /* reserve right space for win-controls */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.history-clear {
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.history-clear:hover { background: rgba(255,91,91,0.25); color: #ffbcbc; border-color: rgba(255,120,120,0.45); }
+.history-clear svg { width: 14px; height: 14px; }
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px 14px;
+}
+
+.history-list::-webkit-scrollbar { width: 8px; }
+.history-list::-webkit-scrollbar-track { background: transparent; }
+.history-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+}
+
+.history-item {
+  padding: 10px 12px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  border: 1px solid transparent;
+}
+.history-item:hover {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  transform: translateX(-2px);
+}
+.history-item-expr {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+.history-item-result {
+  font-size: 18px;
+  color: var(--text);
+  text-align: right;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-empty {
+  color: var(--text-dim);
+  font-size: 12px;
+  text-align: center;
+  padding: 30px 14px;
+  font-style: italic;
+}
+
+/* ===== Memory row (scientific only) ===== */
+.mem-row {
+  position: relative; z-index: 2;
+  display: none;
+  gap: 6px;
+  padding: 0 14px 6px;
+  flex-shrink: 0;
+}
+.mem-row.visible { display: flex; }
+
+.mem-btn {
+  flex: 1;
+  padding: 5px 0;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-soft);
+  backdrop-filter: blur(14px) saturate(160%);
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+.mem-btn:hover {
+  background: var(--glass-bg);
+  color: var(--text);
+  border-color: var(--glass-border-strong);
+}
+.mem-btn.flash {
+  animation: memFlash 0.45s ease;
+}
+@keyframes memFlash {
+  0%   { background: rgba(91,141,239,0.55); color: #fff; }
+  100% { background: var(--glass-bg-soft); }
+}
+
+::-webkit-scrollbar { width: 0; height: 0; }
+
+.btn, .mem-btn, .mode-tab, .tb-btn, .angle-pill, .history-clear, .history-item {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+<!-- Drag zone (covers top strip, except win-controls area) -->
+<div class="drag-zone"></div>
+
+<!-- Window controls (top-right, floating) -->
+<div class="win-controls">
+  <button type="button" class="win-btn history" id="btnHistory" title="История (Ctrl+H)">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 14"/>
+    </svg>
+  </button>
+  <button type="button" class="win-btn" id="btnMinimize" title="Свернуть">
+    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5" stroke="white" stroke-width="1.5"/></svg>
+  </button>
+  <button type="button" class="win-btn close" id="btnClose" title="Закрыть">
+    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="white" stroke-width="1.5"/><line x1="8" y1="2" x2="2" y2="8" stroke="white" stroke-width="1.5"/></svg>
+  </button>
+</div>
+
+<!-- Header (title only; drag is on .drag-zone above) -->
+<div class="titlebar" id="titlebar">
+  <span class="titlebar-title">Калькулятор</span>
+</div>
+
+<!-- Mode tabs -->
+<div class="mode-tabs-wrap">
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabStandard" data-mode="standard">Standard</button>
+    <button class="mode-tab" id="tabScientific" data-mode="scientific">Scientific</button>
+    <button class="mode-tab" id="tabFraction" data-mode="fraction">Fraction</button>
+  </div>
+  <button class="angle-pill" id="anglePill" title="Toggle Rad/Deg">DEG</button>
+</div>
+
+<!-- Memory row (scientific only) -->
+<div class="mem-row" id="memRow">
+  <button class="mem-btn" id="memClear">MC</button>
+  <button class="mem-btn" id="memRecall">MR</button>
+  <button class="mem-btn" id="memPlus">M+</button>
+  <button class="mem-btn" id="memMinus">M−</button>
+  <button class="mem-btn" id="memStore">MS</button>
+</div>
+
+<!-- Display -->
+<div class="calc-display" id="calcDisplay">
+  <div class="history-line" id="historyLine">&nbsp;</div>
+  <div class="main-result" id="mainResult">0</div>
+  <div class="fraction-line" id="fractionLine"></div>
+</div>
+
+<!-- Keys -->
+<div class="calc-keys" id="calcKeys"></div>
+
+<!-- History panel -->
+<div class="history-panel" id="historyPanel">
+  <div class="history-header">
+    <span class="history-title">История</span>
+    <button class="history-clear" id="historyClear" title="Очистить">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+        <path d="M10 11v6"/><path d="M14 11v6"/>
+        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+      </svg>
+    </button>
+  </div>
+  <div class="history-list" id="historyList"></div>
+</div>
+
+</div><!-- /.app-shell -->
+
+<script src="calc-core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

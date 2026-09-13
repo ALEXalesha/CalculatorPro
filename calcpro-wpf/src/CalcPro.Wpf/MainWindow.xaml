@@ -1,0 +1,409 @@
+<Window x:Class="CalcPro.Wpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:CalcPro.Wpf.ViewModels"
+        xmlns:converters="clr-namespace:CalcPro.Wpf.Converters"
+        mc:Ignorable="d"
+        Title="Calc Pro"
+        Width="780" Height="720"
+        MinWidth="420" MinHeight="620"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBaseBg}"
+        UseLayoutRounding="True"
+        FontFamily="{StaticResource UiFontFamily}"
+        Foreground="{StaticResource TextBrush}">
+
+    <Window.Resources>
+        <converters:BoolToVisConverter x:Key="BoolToVis" />
+        <converters:InvBoolToVisConverter x:Key="InvBoolToVis" />
+    </Window.Resources>
+
+    <Window.DataContext>
+        <vm:CalcViewModel />
+    </Window.DataContext>
+
+    <Window.InputBindings>
+        <KeyBinding Key="D0" Command="{Binding PressDigitCommand}" CommandParameter="0" />
+        <KeyBinding Key="D1" Command="{Binding PressDigitCommand}" CommandParameter="1" />
+        <KeyBinding Key="D2" Command="{Binding PressDigitCommand}" CommandParameter="2" />
+        <KeyBinding Key="D3" Command="{Binding PressDigitCommand}" CommandParameter="3" />
+        <KeyBinding Key="D4" Command="{Binding PressDigitCommand}" CommandParameter="4" />
+        <KeyBinding Key="D5" Command="{Binding PressDigitCommand}" CommandParameter="5" />
+        <KeyBinding Key="D6" Command="{Binding PressDigitCommand}" CommandParameter="6" />
+        <KeyBinding Key="D7" Command="{Binding PressDigitCommand}" CommandParameter="7" />
+        <KeyBinding Key="D8" Command="{Binding PressDigitCommand}" CommandParameter="8" />
+        <KeyBinding Key="D9" Command="{Binding PressDigitCommand}" CommandParameter="9" />
+        <KeyBinding Key="NumPad0" Command="{Binding PressDigitCommand}" CommandParameter="0" />
+        <KeyBinding Key="NumPad1" Command="{Binding PressDigitCommand}" CommandParameter="1" />
+        <KeyBinding Key="NumPad2" Command="{Binding PressDigitCommand}" CommandParameter="2" />
+        <KeyBinding Key="NumPad3" Command="{Binding PressDigitCommand}" CommandParameter="3" />
+        <KeyBinding Key="NumPad4" Command="{Binding PressDigitCommand}" CommandParameter="4" />
+        <KeyBinding Key="NumPad5" Command="{Binding PressDigitCommand}" CommandParameter="5" />
+        <KeyBinding Key="NumPad6" Command="{Binding PressDigitCommand}" CommandParameter="6" />
+        <KeyBinding Key="NumPad7" Command="{Binding PressDigitCommand}" CommandParameter="7" />
+        <KeyBinding Key="NumPad8" Command="{Binding PressDigitCommand}" CommandParameter="8" />
+        <KeyBinding Key="NumPad9" Command="{Binding PressDigitCommand}" CommandParameter="9" />
+        <KeyBinding Key="OemPeriod" Command="{Binding PressDigitCommand}" CommandParameter="." />
+        <KeyBinding Key="Decimal" Command="{Binding PressDigitCommand}" CommandParameter="." />
+        <KeyBinding Key="OemComma" Command="{Binding PressDigitCommand}" CommandParameter="." />
+
+        <KeyBinding Key="Add" Command="{Binding PressOperatorCommand}" CommandParameter="+" />
+        <KeyBinding Key="OemPlus" Command="{Binding PressOperatorCommand}" CommandParameter="+" />
+        <KeyBinding Key="OemPlus" Modifiers="Shift" Command="{Binding PressOperatorCommand}" CommandParameter="+" />
+        <KeyBinding Key="Subtract" Command="{Binding PressOperatorCommand}" CommandParameter="-" />
+        <KeyBinding Key="OemMinus" Command="{Binding PressOperatorCommand}" CommandParameter="-" />
+        <KeyBinding Key="Multiply" Command="{Binding PressOperatorCommand}" CommandParameter="*" />
+        <KeyBinding Key="Divide" Command="{Binding PressOperatorCommand}" CommandParameter="/" />
+
+        <KeyBinding Key="Enter" Command="{Binding PressEqualsCommand}" />
+        <KeyBinding Key="Return" Command="{Binding PressEqualsCommand}" />
+
+        <KeyBinding Key="Back" Command="{Binding PressBackspaceCommand}" />
+        <KeyBinding Key="Delete" Command="{Binding PressClearEntryCommand}" />
+        <KeyBinding Key="Escape" Command="{Binding PressClearCommand}" />
+
+        <KeyBinding Key="Z" Modifiers="Ctrl" Command="{Binding UndoCommand}" />
+        <KeyBinding Key="Y" Modifiers="Ctrl" Command="{Binding RedoCommand}" />
+        <KeyBinding Key="C" Modifiers="Ctrl" Command="{Binding CopyResultCommand}" />
+        <KeyBinding Key="V" Modifiers="Ctrl" Command="{Binding PasteResultCommand}" />
+        <KeyBinding Key="H" Modifiers="Ctrl" Command="{Binding ToggleHistoryCommand}" />
+        <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding PressMemoryCommand}" CommandParameter="MR" />
+    </Window.InputBindings>
+
+    <Grid>
+        <!-- ==================== Layer 0: cosmic background gradients ==================== -->
+        <Rectangle Fill="{StaticResource WindowGlowVioletTL}" IsHitTestVisible="False" />
+        <Rectangle Fill="{StaticResource WindowGlowPinkTR}" IsHitTestVisible="False" />
+        <Rectangle Fill="{StaticResource WindowGlowCyanBR}" IsHitTestVisible="False" />
+        <Rectangle Fill="{StaticResource WindowGlowGreenBL}" IsHitTestVisible="False" />
+
+        <!-- ==================== Layer 1: main content ==================== -->
+        <Grid Margin="14">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ===================== Calculator main panel ===================== -->
+            <ContentControl Grid.Column="0"
+                            Style="{StaticResource GlassPanel}"
+                            Margin="0,0,7,0">
+                <Grid Margin="18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- ============ Header: mode + angle + memory indicator ============ -->
+                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="Calc Pro"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextDimBrush}"
+                                   VerticalAlignment="Center" />
+
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,8,0">
+                            <Border Background="{StaticResource AccentGradient}"
+                                    CornerRadius="8"
+                                    Padding="8,3"
+                                    Margin="0,0,6,0"
+                                    Visibility="{Binding IsMemoryActive, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="M" FontSize="11" FontWeight="Bold" Foreground="White" />
+                            </Border>
+
+                            <Button Style="{StaticResource PillButton}"
+                                    Command="{Binding ToggleAngleModeCommand}"
+                                    Width="50" Margin="0,0,4,0">
+                                <TextBlock>
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="DEG" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsDegrees}" Value="False">
+                                                    <Setter Property="Text" Value="RAD" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Button>
+                        </StackPanel>
+
+                        <Button Grid.Column="3"
+                                Style="{StaticResource PillButton}"
+                                Command="{Binding ToggleModeCommand}"
+                                Width="86">
+                            <TextBlock>
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="Standard" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsScientific}" Value="True">
+                                                <Setter Property="Text" Value="Scientific" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Button>
+                    </Grid>
+
+                    <!-- ============ Display panel ============ -->
+                    <ContentControl Grid.Row="1"
+                                    Style="{StaticResource GlassPanelSoft}"
+                                    Padding="18,16">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0"
+                                       Text="{Binding Expression}"
+                                       FontSize="14"
+                                       Foreground="{StaticResource TextDimBrush}"
+                                       TextAlignment="Right"
+                                       TextTrimming="CharacterEllipsis"
+                                       MinHeight="20" />
+                            <TextBlock x:Name="DisplayText"
+                                       Grid.Row="1"
+                                       Text="{Binding Display}"
+                                       FontSize="46"
+                                       FontWeight="Light"
+                                       Foreground="{StaticResource TextBrush}"
+                                       TextAlignment="Right"
+                                       TextTrimming="CharacterEllipsis"
+                                       Margin="0,6,0,0">
+                                <TextBlock.RenderTransform>
+                                    <TranslateTransform x:Name="DisplayTranslate" Y="0" />
+                                </TextBlock.RenderTransform>
+                            </TextBlock>
+                        </Grid>
+                    </ContentControl>
+
+                    <!-- ============ Memory + history buttons row ============ -->
+                    <UniformGrid Grid.Row="2" Rows="1" Columns="6" Margin="0,12,0,12">
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding PressMemoryCommand}" CommandParameter="MC"
+                                Content="MC" Margin="3,0" />
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding PressMemoryCommand}" CommandParameter="MR"
+                                Content="MR" Margin="3,0" />
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding PressMemoryCommand}" CommandParameter="M+"
+                                Content="M+" Margin="3,0" />
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding PressMemoryCommand}" CommandParameter="M-"
+                                Content="M-" Margin="3,0" />
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding PressMemoryCommand}" CommandParameter="MS"
+                                Content="MS" Margin="3,0" />
+                        <Button Style="{StaticResource PillButton}"
+                                Command="{Binding ToggleHistoryCommand}"
+                                Content="History" Margin="3,0" />
+                    </UniformGrid>
+
+                    <!-- ============ Button grid ============ -->
+                    <Grid Grid.Row="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="SciColA" Width="0" />
+                            <ColumnDefinition x:Name="SciColB" Width="0" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.Resources>
+                            <Style TargetType="Button" BasedOn="{StaticResource GlassButton}">
+                                <Setter Property="Margin" Value="4" />
+                                <!-- No fixed MinHeight: the seven star rows share whatever height
+                                     the window has, so the bottom row is never clipped. -->
+                                <Setter Property="MinHeight" Value="24" />
+                            </Style>
+                        </Grid.Resources>
+
+                        <!-- ===== Scientific column A (hidden in Standard) ===== -->
+                        <Button Grid.Row="0" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="sin" Content="sin" />
+                        <Button Grid.Row="1" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="cos" Content="cos" />
+                        <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="tan" Content="tan" />
+                        <Button Grid.Row="3" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="asin" Content="asin" />
+                        <Button Grid.Row="4" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="acos" Content="acos" />
+                        <Button Grid.Row="5" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="atan" Content="atan" />
+                        <Button Grid.Row="6" Grid.Column="0" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressConstantCommand}" CommandParameter="pi" Content="π" />
+
+                        <!-- ===== Scientific column B ===== -->
+                        <Button Grid.Row="0" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="log" Content="log" />
+                        <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="ln" Content="ln" />
+                        <Button Grid.Row="2" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="exp" Content="exp" />
+                        <Button Grid.Row="3" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="sqrt" Content="√" />
+                        <Button Grid.Row="4" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="^" Content="x^y" />
+                        <Button Grid.Row="5" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="abs" Content="abs" />
+                        <Button Grid.Row="6" Grid.Column="1" Style="{StaticResource FunctionButton}" Margin="4"
+                                Command="{Binding PressConstantCommand}" CommandParameter="e" Content="e" />
+
+                        <!-- ===== Standard 4-col layout (columns 2..5) ===== -->
+                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressClearCommand}" Content="AC" />
+                        <Button Grid.Row="0" Grid.Column="3" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressClearEntryCommand}" Content="C" />
+                        <Button Grid.Row="0" Grid.Column="4" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressBackspaceCommand}" Content="⌫" />
+                        <Button Grid.Row="0" Grid.Column="5" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="/" Content="÷" />
+
+                        <Button Grid.Row="1" Grid.Column="2"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="sqr" Content="x²"
+                                ToolTip="square the current number" />
+                        <Button Grid.Row="1" Grid.Column="3"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="%" Content="%" />
+                        <Button Grid.Row="1" Grid.Column="4"
+                                Command="{Binding PressParenCommand}" CommandParameter="(" Content="(" />
+                        <Button Grid.Row="1" Grid.Column="5" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="*" Content="×" />
+
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Command="{Binding PressDigitCommand}" CommandParameter="7" Content="7" />
+                        <Button Grid.Row="2" Grid.Column="3"
+                                Command="{Binding PressDigitCommand}" CommandParameter="8" Content="8" />
+                        <Button Grid.Row="2" Grid.Column="4"
+                                Command="{Binding PressDigitCommand}" CommandParameter="9" Content="9" />
+                        <Button Grid.Row="2" Grid.Column="5" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="-" Content="−" />
+
+                        <Button Grid.Row="3" Grid.Column="2"
+                                Command="{Binding PressDigitCommand}" CommandParameter="4" Content="4" />
+                        <Button Grid.Row="3" Grid.Column="3"
+                                Command="{Binding PressDigitCommand}" CommandParameter="5" Content="5" />
+                        <Button Grid.Row="3" Grid.Column="4"
+                                Command="{Binding PressDigitCommand}" CommandParameter="6" Content="6" />
+                        <Button Grid.Row="3" Grid.Column="5" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="+" Content="+" />
+
+                        <Button Grid.Row="4" Grid.Column="2"
+                                Command="{Binding PressDigitCommand}" CommandParameter="1" Content="1" />
+                        <Button Grid.Row="4" Grid.Column="3"
+                                Command="{Binding PressDigitCommand}" CommandParameter="2" Content="2" />
+                        <Button Grid.Row="4" Grid.Column="4"
+                                Command="{Binding PressDigitCommand}" CommandParameter="3" Content="3" />
+                        <Button Grid.Row="4" Grid.Column="5" Grid.RowSpan="3" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding PressEqualsCommand}" Content="=" />
+
+                        <Button Grid.Row="5" Grid.Column="2"
+                                Command="{Binding PressSignCommand}" Content="±" />
+                        <Button Grid.Row="5" Grid.Column="3"
+                                Command="{Binding PressDigitCommand}" CommandParameter="0" Content="0" />
+                        <Button Grid.Row="5" Grid.Column="4"
+                                Command="{Binding PressDigitCommand}" CommandParameter="." Content="." />
+
+                        <Button Grid.Row="6" Grid.Column="2"
+                                Command="{Binding PressParenCommand}" CommandParameter=")" Content=")" />
+                        <Button Grid.Row="6" Grid.Column="3"
+                                Command="{Binding PressOperatorCommand}" CommandParameter="^" Content="x^y" />
+                        <Button Grid.Row="6" Grid.Column="4"
+                                Command="{Binding PressFunctionCommand}" CommandParameter="sqrt" Content="√" />
+                    </Grid>
+                </Grid>
+            </ContentControl>
+
+            <!-- ===================== History panel ===================== -->
+            <ContentControl Grid.Column="1"
+                            Style="{StaticResource GlassPanel}"
+                            Width="270"
+                            Margin="7,0,0,0"
+                            Visibility="{Binding IsHistoryVisible, Converter={StaticResource BoolToVis}}">
+                <Grid Margin="14">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="History"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}"
+                                   VerticalAlignment="Center" />
+                        <Button Grid.Column="1"
+                                Style="{StaticResource PillButton}"
+                                Command="{Binding ClearHistoryCommand}"
+                                Content="Clear" Width="60" />
+                    </Grid>
+
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding HistoryEntries}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource GlassButton}"
+                                            Margin="0,4"
+                                            HorizontalContentAlignment="Stretch"
+                                            Padding="10,8"
+                                            Command="{Binding DataContext.UseHistoryEntryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                            CommandParameter="{Binding}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Expression}"
+                                                       FontSize="12"
+                                                       Foreground="{StaticResource TextDimBrush}"
+                                                       TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Result}"
+                                                       FontSize="18"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource TextBrush}"
+                                                       TextAlignment="Right"
+                                                       Margin="0,2,0,0" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                    <TextBlock Grid.Row="2"
+                               Text="Click an entry to reuse its result."
+                               FontSize="11"
+                               Foreground="{StaticResource TextDimBrush}"
+                               TextWrapping="Wrap"
+                               Margin="0,10,0,0" />
+                </Grid>
+            </ContentControl>
+        </Grid>
+    </Grid>
+</Window>
