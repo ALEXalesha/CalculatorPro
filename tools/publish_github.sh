@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Публикация Calc Pro Glass на GitHub: https://github.com/ALEXalesha/CalculatorPro
+# Публикация всех трёх калькуляторов на GitHub: https://github.com/ALEXalesha/CalculatorPro
 #
 #   bash tools/publish_github.sh            # только код
-#   bash tools/publish_github.sh v1.1.1     # код и тег
+#   bash tools/publish_github.sh v1.2.0     # код и тег
 #
-# Источник правды - этот репозиторий на Gitea. На GitHub уезжает только
-# calcpro-glass/, поднятый в корень через subtree split: WPF-версия и iOS-калькулятор
-# не публикуются. Ветка пересобирается каждый раз заново, отсюда --force.
+# Источник правды - этот репозиторий на Gitea. До 1.2.0 на GitHub уезжал один
+# calcpro-glass/ срезом подкаталога; с 1.2.0 публикуется весь репозиторий:
+# WPF-версия, Glass и iOS-калькулятор. Ветка пересобирается каждый раз заново,
+# отсюда --force.
 #
 # В публикуемой копии заменяется личное - и в авторах коммитов, и в содержимом
 # файлов по всей истории:
@@ -21,7 +22,6 @@ set -euo pipefail
 
 export PATH="$PATH:/c/Program Files/GitHub CLI"
 REPO=ALEXalesha/CalculatorPro
-PREFIX=calcpro-glass
 PRIVATE_EMAIL="$(git config user.email)"
 PUBLIC_EMAIL=203467574+ALEXalesha@users.noreply.github.com
 LAN_GITEA="$(git remote get-url origin | sed -E 's#^[a-z]+://([^/]+)/.*#\1#')"
@@ -40,7 +40,7 @@ fi
 git remote get-url github >/dev/null 2>&1 || git remote add github "https://github.com/$REPO.git"
 
 git branch -D github-main >/dev/null 2>&1 || true
-git subtree split --prefix="$PREFIX" -b github-main >/dev/null 2>&1
+git branch -f github-main HEAD
 
 FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch -f --env-filter "
   if [ \"\$GIT_AUTHOR_EMAIL\" = '$PRIVATE_EMAIL' ]; then export GIT_AUTHOR_EMAIL='$PUBLIC_EMAIL'; fi
