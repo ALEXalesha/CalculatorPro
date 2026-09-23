@@ -1,6 +1,6 @@
 {
   "name": "calculator-ios26",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Calculator iOS 26 — Liquid Glass Windows app",
   "author": "ALEXalesha",
   "license": "MIT",
@@ -38,8 +38,18 @@
     "win": {
       "icon": "assets/icon.ico",
       "target": [
-        { "target": "portable", "arch": ["x64"] },
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "portable": {
