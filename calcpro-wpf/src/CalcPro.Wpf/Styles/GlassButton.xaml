@@ -1,19 +1,14 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <DropShadowEffect x:Key="AccentGlow"
-                      Color="#5B8DEF"
-                      BlurRadius="24"
-                      ShadowDepth="0"
-                      Opacity="0.55" />
 
     <!-- ==================================================================
          Base glass button — used for digits and most controls.
          ================================================================== -->
     <Style x:Key="GlassButton" TargetType="Button">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="Background" Value="{StaticResource GlassBg}" />
-        <Setter Property="BorderBrush" Value="{StaticResource GlassBorder}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+        <Setter Property="Background" Value="{DynamicResource GlassBg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="FontFamily" Value="{StaticResource UiFontFamily}" />
@@ -45,7 +40,7 @@
                                 BorderThickness="{TemplateBinding BorderThickness}" />
 
                         <Border CornerRadius="14"
-                                Background="{StaticResource PanelSpecular}"
+                                Background="{DynamicResource PanelSpecular}"
                                 IsHitTestVisible="False" />
 
                         <ContentPresenter HorizontalAlignment="Center"
@@ -56,8 +51,8 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bg" Property="Background" Value="{StaticResource GlassBgStrong}" />
-                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource GlassBorderStrong}" />
+                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource GlassBgStrong}" />
+                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource GlassBorderStrong}" />
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -116,7 +111,7 @@
          Operator (+ - * /) — subtle accent tint.
          ================================================================== -->
     <Style x:Key="OperatorButton" TargetType="Button" BasedOn="{StaticResource GlassButton}">
-        <Setter Property="Background" Value="{StaticResource OperatorTint}" />
+        <Setter Property="Background" Value="{DynamicResource OperatorTint}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
@@ -124,9 +119,9 @@
          Primary (= equals) — accent gradient + glow.
          ================================================================== -->
     <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource GlassButton}">
-        <Setter Property="Background" Value="{StaticResource AccentGradient}" />
-        <Setter Property="BorderBrush" Value="{StaticResource GlassBorderStrong}" />
-        <Setter Property="Effect" Value="{StaticResource AccentGlow}" />
+        <Setter Property="Background" Value="{DynamicResource AccentGradient}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource GlassBorderStrong}" />
+        <Setter Property="Effect" Value="{DynamicResource AccentGlow}" />
         <Setter Property="Foreground" Value="White" />
         <Setter Property="FontSize" Value="26" />
         <Setter Property="FontWeight" Value="SemiBold" />
@@ -136,8 +131,8 @@
          Danger (AC / C / ⌫) — red tint.
          ================================================================== -->
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource GlassButton}">
-        <Setter Property="Background" Value="{StaticResource DangerTint}" />
-        <Setter Property="Foreground" Value="{StaticResource DangerText}" />
+        <Setter Property="Background" Value="{DynamicResource DangerTint}" />
+        <Setter Property="Foreground" Value="{DynamicResource DangerText}" />
         <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
 
@@ -151,7 +146,7 @@
 
     <Style x:Key="FunctionButton" TargetType="Button" BasedOn="{StaticResource GlassButton}">
         <Setter Property="FontSize" Value="15" />
-        <Setter Property="Background" Value="{StaticResource GlassBgSoft}" />
+        <Setter Property="Background" Value="{DynamicResource GlassBgSoft}" />
     </Style>
 
 </ResourceDictionary>

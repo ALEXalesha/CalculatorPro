@@ -54,6 +54,19 @@ internal static class Program
         Press(vm, "AC 3 0 sin + 2 sqrt =");
         Save(window, output, "scientific.png", vm);
 
+        // Пять тем Paint Pro на обычном режиме. Тема ставится только на экран:
+        // ThemeService.Save не зовётся, файл настроек человека не трогается.
+        vm.ToggleModeCommand.Execute(null);
+        Press(vm, "AC 1 2 3 4 * 5 6 =");
+        var frames = new List<BitmapSource>();
+        foreach (var theme in CalcPro.Core.Services.ThemeCatalog.All)
+        {
+            CalcPro.Wpf.Services.ThemeService.Apply(theme.Id);
+            frames.Add(Render(window));
+        }
+        CalcPro.Wpf.Services.ThemeService.Apply(CalcPro.Core.Services.ThemeCatalog.DefaultId);
+        SaveGrid(frames, output, "themes.png");
+
         window.Close();
         return 0;
     }
@@ -83,6 +96,35 @@ internal static class Program
 
     private static void Save(Window window, string folder, string name, CalcViewModel vm)
     {
+        var bitmap = Render(window);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using (var file = File.Create(Path.Combine(folder, name))) encoder.Save(file);
+        Console.WriteLine($"  {name}: {vm.Expression} {vm.Display}");
+    }
+
+    /// <summary>Кадры сеткой: три в ряд, с отступами, на прозрачном фоне.</summary>
+    private static void SaveGrid(IReadOnlyList<BitmapSource> frames, string folder, string name)
+    {
+        const int columns = 3, gap = 24;
+        int w = frames[0].PixelWidth, h = frames[0].PixelHeight;
+        var rows = (frames.Count + columns - 1) / columns;
+        var visual = new DrawingVisual();
+        using (var dc = visual.RenderOpen())
+        {
+            for (var i = 0; i < frames.Count; i++)
+                dc.DrawImage(frames[i], new Rect(i % columns * (w + gap), i / columns * (h + gap), w, h));
+        }
+        var grid = new RenderTargetBitmap(columns * w + (columns - 1) * gap, rows * h + (rows - 1) * gap, 96, 96, PixelFormats.Pbgra32);
+        grid.Render(visual);
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(grid));
+        using (var file = File.Create(Path.Combine(folder, name))) encoder.Save(file);
+        Console.WriteLine($"  {name}");
+    }
+
+    private static BitmapSource Render(Window window)
+    {
         Wait(700); // анимации результата и ширины научных колонок (260-380 мс) доигрывают
         // Рисуется клиентская часть: у ActualWidth окна в размер входит рамка Windows,
         // и в первом кадре справа и снизу оставались пустые полосы. Фон окна
@@ -101,11 +143,7 @@ internal static class Program
         var bitmap = new RenderTargetBitmap((int)Math.Round(size.Width * Scale), (int)Math.Round(size.Height * Scale),
             96 * Scale, 96 * Scale, PixelFormats.Pbgra32);
         bitmap.Render(visual);
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap));
-        var path = Path.Combine(folder, name);
-        using (var file = File.Create(path)) encoder.Save(file);
-        Console.WriteLine($"  {name}: {vm.Expression} {vm.Display}");
+        return bitmap;
     }
 
     /// <summary>Крутит цикл сообщений: без этого не пройдут ни привязки, ни раскладка, ни анимации.</summary>

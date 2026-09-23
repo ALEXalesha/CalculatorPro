@@ -10,10 +10,10 @@
         Width="780" Height="720"
         MinWidth="420" MinHeight="620"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource WindowBaseBg}"
+        Background="{DynamicResource WindowBaseBg}"
         UseLayoutRounding="True"
         FontFamily="{StaticResource UiFontFamily}"
-        Foreground="{StaticResource TextBrush}">
+        Foreground="{DynamicResource TextBrush}">
 
     <Window.Resources>
         <converters:BoolToVisConverter x:Key="BoolToVis" />
@@ -75,10 +75,10 @@
 
     <Grid>
         <!-- ==================== Layer 0: cosmic background gradients ==================== -->
-        <Rectangle Fill="{StaticResource WindowGlowVioletTL}" IsHitTestVisible="False" />
-        <Rectangle Fill="{StaticResource WindowGlowPinkTR}" IsHitTestVisible="False" />
-        <Rectangle Fill="{StaticResource WindowGlowCyanBR}" IsHitTestVisible="False" />
-        <Rectangle Fill="{StaticResource WindowGlowGreenBL}" IsHitTestVisible="False" />
+        <Rectangle Fill="{DynamicResource WindowGlowVioletTL}" IsHitTestVisible="False" />
+        <Rectangle Fill="{DynamicResource WindowGlowPinkTR}" IsHitTestVisible="False" />
+        <Rectangle Fill="{DynamicResource WindowGlowCyanBR}" IsHitTestVisible="False" />
+        <Rectangle Fill="{DynamicResource WindowGlowGreenBL}" IsHitTestVisible="False" />
 
         <!-- ==================== Layer 1: main content ==================== -->
         <Grid Margin="14">
@@ -112,11 +112,11 @@
                                    Text="Calc Pro"
                                    FontSize="14"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextDimBrush}"
+                                   Foreground="{DynamicResource TextDimBrush}"
                                    VerticalAlignment="Center" />
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,8,0">
-                            <Border Background="{StaticResource AccentGradient}"
+                            <Border Background="{DynamicResource AccentGradient}"
                                     CornerRadius="8"
                                     Padding="8,3"
                                     Margin="0,0,6,0"
@@ -124,6 +124,18 @@
                                     Visibility="{Binding IsMemoryActive, Converter={StaticResource BoolToVis}}">
                                 <TextBlock Text="M" FontSize="11" FontWeight="Bold" Foreground="White" />
                             </Border>
+
+                            <!-- Тема оформления: те же пять, что в Paint Pro. Меню собирает
+                                 code-behind (OnThemeButtonClick): это чистое оформление. -->
+                            <Button x:Name="ThemeButton"
+                                    Style="{StaticResource PillButton}"
+                                    Click="OnThemeButtonClick"
+                                    ToolTip="Тема оформления"
+                                    Width="44" Margin="0,0,4,0">
+                                <Path Width="16" Height="16" Stretch="Uniform"
+                                      Stroke="{DynamicResource TextBrush}" StrokeThickness="1.4"
+                                      Data="M8,1.5 A6.5,6.5 0 1 0 8,14.5 C8.9,14.5 9.3,13.9 9.3,13.3 C9.3,12.5 8.6,12.3 8.6,11.5 C8.6,10.8 9.2,10.3 9.9,10.3 L11.5,10.3 A3.5,3.5 0 0 0 15,6.8 C15,3.9 11.9,1.5 8,1.5 Z M4.8,6.3 A0.9,0.9 0 1 0 4.8,8.1 A0.9,0.9 0 1 0 4.8,6.3 Z M7.3,3.5 A0.9,0.9 0 1 0 7.3,5.3 A0.9,0.9 0 1 0 7.3,3.5 Z M10.7,4.3 A0.9,0.9 0 1 0 10.7,6.1 A0.9,0.9 0 1 0 10.7,4.3 Z" />
+                            </Button>
 
                             <Button Style="{StaticResource PillButton}"
                                     Command="{Binding ToggleAngleModeCommand}"
@@ -174,7 +186,7 @@
                             <TextBlock Grid.Row="0"
                                        Text="{Binding Expression, Converter={StaticResource PrettyExpression}}"
                                        FontSize="14"
-                                       Foreground="{StaticResource TextDimBrush}"
+                                       Foreground="{DynamicResource TextDimBrush}"
                                        TextAlignment="Right"
                                        TextTrimming="CharacterEllipsis"
                                        MinHeight="20" />
@@ -183,7 +195,7 @@
                                        Text="{Binding Display}"
                                        FontSize="46"
                                        FontWeight="Light"
-                                       Foreground="{StaticResource TextBrush}"
+                                       Foreground="{DynamicResource TextBrush}"
                                        TextAlignment="Right"
                                        TextTrimming="CharacterEllipsis"
                                        Margin="0,6,0,0">
@@ -362,7 +374,7 @@
                         <TextBlock Text="History"
                                    FontSize="14"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextBrush}"
+                                   Foreground="{DynamicResource TextBrush}"
                                    VerticalAlignment="Center" />
                         <Button Grid.Column="1"
                                 Style="{StaticResource PillButton}"
@@ -383,12 +395,12 @@
                                         <StackPanel>
                                             <TextBlock Text="{Binding Expression, Converter={StaticResource PrettyExpression}}"
                                                        FontSize="12"
-                                                       Foreground="{StaticResource TextDimBrush}"
+                                                       Foreground="{DynamicResource TextDimBrush}"
                                                        TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding Result}"
                                                        FontSize="18"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextBrush}"
+                                                       Foreground="{DynamicResource TextBrush}"
                                                        TextAlignment="Right"
                                                        Margin="0,2,0,0" />
                                         </StackPanel>
@@ -401,7 +413,7 @@
                     <TextBlock Grid.Row="2"
                                Text="Click an entry to reuse its result."
                                FontSize="11"
-                               Foreground="{StaticResource TextDimBrush}"
+                               Foreground="{DynamicResource TextDimBrush}"
                                TextWrapping="Wrap"
                                Margin="0,10,0,0" />
                 </Grid>
