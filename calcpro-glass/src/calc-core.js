@@ -395,9 +395,23 @@
     return html;
   }
 
-  /** Plain-text version of the fraction expression (for history / the top line). */
+  /**
+   * Plain-text version of the fraction expression (for history / the top line).
+   *
+   * Built from the terms, not by stripping tags from the stacked HTML: that
+   * dropped the fraction bar, and 1/2 + 1/3 read as "12 + 13". `cursor` is kept
+   * for the call sites; the text does not depend on it.
+   */
   function fractionExprText(terms, cursor) {
-    return renderFractionExpr(terms, cursor).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const opSymbol = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+    const parts = [];
+    for (const t of terms) {
+      const hasFrac = t.num !== '' || t.den !== '';
+      const text = [t.whole, hasFrac ? t.num + '/' + t.den : ''].filter(Boolean).join(' ');
+      if (text) parts.push(text);
+      if (t.op) parts.push(opSymbol[t.op]);
+    }
+    return parts.join(' ');
   }
 
   /**
