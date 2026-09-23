@@ -67,6 +67,33 @@ app.whenReady().then(async () => {
   fs.writeFileSync(out, (await win.webContents.capturePage()).toPNG());
   console.log('screenshot:', out);
 
+  // Темы Paint Pro: меню, смена цветов, память о выборе, Escape закрывает список.
+  const css = v => js(`getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(v)}).trim()`);
+  check('glass theme by default', await js('document.documentElement.getAttribute("data-theme")'), null);
+  const glassBase = await css('--app-base');
+  await click('#btnTheme');
+  check('theme menu open', await js('document.getElementById("themeMenu").classList.contains("open")'), true);
+  check('five themes as in Paint Pro', await js('[...document.querySelectorAll("#themeMenu .theme-item")].map(b => b.dataset.theme).join(",")'),
+    'glass,formal,light,night,warm');
+  await click('#themeMenu .theme-item[data-theme="light"]');
+  check('light theme applied', await js('document.documentElement.getAttribute("data-theme")'), 'light');
+  check('light background differs', (await css('--app-base')) !== glassBase, true);
+  check('menu closed after choice', await js('document.getElementById("themeMenu").classList.contains("open")'), false);
+  check('choice remembered', await js('localStorage.getItem("calc-theme")'), 'light');
+  await keys(['AC', '4', '2']);
+  await click('#btnTheme');
+  await js('document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))');
+  check('Escape closes the theme list', await js('document.getElementById("themeMenu").classList.contains("open")'), false);
+  check('Escape in the list does not clear the display', await js('document.querySelector("#mainResult").textContent.trim()'), '42');
+  await win.webContents.reload();
+  await new Promise(r => win.webContents.once('did-finish-load', r));
+  check('theme survives a restart', await js('document.documentElement.getAttribute("data-theme")'), 'light');
+  check('checkmark on the saved theme', await js('document.querySelector("#themeMenu .theme-item[aria-checked=true]").dataset.theme'), 'light');
+  await js('localStorage.setItem("calc-theme", "no-such-theme")');
+  await win.webContents.reload();
+  await new Promise(r => win.webContents.once('did-finish-load', r));
+  check('unknown saved theme falls back to glass', await js('document.documentElement.getAttribute("data-theme")'), null);
+
   check('no console errors', errors.join(' | '), '');
   console.log(failures ? `${failures} check(s) failed` : 'all e2e checks passed');
   app.exit(failures ? 1 : 0);

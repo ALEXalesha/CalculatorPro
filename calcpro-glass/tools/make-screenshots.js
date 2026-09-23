@@ -18,7 +18,7 @@ const H = 640;
 const GAP = 24;
 
 app.whenReady().then(async () => {
-  setTimeout(() => { console.error('timeout'); app.exit(2); }, 30000);
+  setTimeout(() => { console.error('timeout'); app.exit(2); }, 60000);
   const win = new BrowserWindow({
     width: W, height: H, show: false, frame: false, transparent: true,
     webPreferences: {
@@ -59,24 +59,39 @@ app.whenReady().then(async () => {
   await keys(['AC', 'a/b', '1', 'a/b', '2', '+', 'a/b', '1', 'a/b', '3', '=']);
   const fraction = await frame('fraction.png');
 
-  // Три кадра рядом: холст с прозрачным фоном, окна с отступом.
+  // Кадры рядом: холст с прозрачным фоном, окна с отступом.
   const scale = standard.getSize().width / W;
-  const w = Math.round((W * 3 + GAP * 2) * scale);
-  const h = Math.round(H * scale);
-  const canvas = Buffer.alloc(w * h * 4);
-  [standard, scientific, fraction].forEach((img, i) => {
-    const bmp = img.toBitmap();
-    const { width, height } = img.getSize();
-    const x0 = Math.round(i * (W + GAP) * scale);
-    for (let y = 0; y < height; y++) {
-      bmp.copy(canvas, ((y * w) + x0) * 4, y * width * 4, (y + 1) * width * 4);
-    }
-  });
-  const joined = nativeImage.createFromBitmap(canvas, { width: w, height: h, scaleFactor: scale });
-  fs.writeFileSync(path.join(OUT, 'modes.png'), joined.toPNG());
-  console.log('  modes.png');
+  const join = (images, name) => {
+    const w = Math.round((W * images.length + GAP * (images.length - 1)) * scale);
+    const h = Math.round(H * scale);
+    const canvas = Buffer.alloc(w * h * 4);
+    images.forEach((img, i) => {
+      const bmp = img.toBitmap();
+      const { width, height } = img.getSize();
+      const x0 = Math.round(i * (W + GAP) * scale);
+      for (let y = 0; y < height; y++) {
+        bmp.copy(canvas, ((y * w) + x0) * 4, y * width * 4, (y + 1) * width * 4);
+      }
+    });
+    fs.writeFileSync(path.join(OUT, name),
+      nativeImage.createFromBitmap(canvas, { width: w, height: h, scaleFactor: scale }).toPNG());
+    console.log(`  ${name}`);
+  };
+  join([standard, scientific, fraction], 'modes.png');
 
   const shown = await js('document.querySelector("#mainResult").textContent.trim()');
   console.log(`дробь в кадре: ${shown}`);
+
+  // Пять тем Paint Pro на одном примере. Тема ставится тем же CalcTheme.apply, что и из
+  // меню, но без записи: хранилище у этой сессии своё и в памяти, да и писать нечего.
+  await click('#tabStandard');
+  await keys(['AC', '1', '2', '3', '4', '×', '5', '6', '=']);
+  const themed = [];
+  for (const id of ['glass', 'formal', 'light', 'night', 'warm']) {
+    await js(`CalcTheme.apply(document.documentElement, ${JSON.stringify(id)}, null)`);
+    themed.push(await frame(`theme-${id}.png`));
+  }
+  join(themed, 'themes.png');
+  for (const id of ['glass', 'formal', 'light', 'night', 'warm']) fs.unlinkSync(path.join(OUT, `theme-${id}.png`));
   app.exit(0);
 }).catch((e) => { console.error(e); app.exit(1); });
