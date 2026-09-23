@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 461 tests, most of them properties over random input.**
+**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 491 tests, most of them properties over random input.**
 
 [Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md)
 
@@ -32,17 +32,25 @@ Three modes: Standard, Scientific with DEG/RAD/GRAD and 2nd, and Fraction, where
 
 A copy of the iPhone calculator: step-by-step evaluation without precedence (`2 + 3 × 4 =` gives 20, as on the phone), round buttons that stay round at any window size, a scientific panel, and history. The interface is in Russian, numbers are written the Russian way: `1 234,5`. [More](ios-calculator/README.md)
 
+## Themes
+
+All three have the same five themes as Paint Pro, with the same colours: Стеклянная (glass, the default), Строгая (formal), Светлая (light), Ночная (night) and Тёплая (warm). The calculators and Paint were meant to look like one family, and now they do. The theme is picked from the palette button (Calc Pro, Calc Pro Glass) or the `•••` menu (Calculator iOS 26), changes the window at once and is remembered between runs.
+
+<img src="calcpro-glass/docs/screenshots/themes.png" width="900" alt="The five themes of Paint Pro in Calc Pro Glass">
+
 ## Tests
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 298 (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 118 + e2e in Electron
-cd ios-calculator; npm test; npm run test:e2e # 45 + e2e in Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 310 (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 127 + e2e in Electron
+cd ios-calculator; npm test; npm run test:e2e # 54 + e2e in Electron
 ```
 
 Most tests state a law instead of an example: a random expression tree printed with minimal brackets parses back into the same tree; `sin² + cos² = 1`; undoing every key press returns the initial state. The key-press state machines get thousands of random sequences, and after every single press the display, the expression and the memory are checked. [docs/TESTING.md](docs/TESTING.md) lists them all (in Russian).
 
 These properties keep finding real bugs. Getting this repository ready for publication, the random-keys property of Calc Pro Glass found that `EE` right after `=` glued an `E` onto a stale display (`0E`) which the next digit then wiped. The README screenshots found two more in Calc Pro: the expression line showed `*` and `/` while the buttons say `×` and `÷`, and the memory badge stretched into a tall bar.
+
+The theme tests read the theme files themselves: all five must define the same keys, text must keep at least 4.5:1 on its keys in every theme, and the markup may reach theme colours only through the theme. They found that the AC, ± and % keys were below that contrast in two themes, 3.37:1 in glass and 2.60:1 in formal, and that was fixed before the release.
 
 CI runs the C# and JavaScript engine tests on every push. The end-to-end runs need a real Electron window and are run locally before a release.
 

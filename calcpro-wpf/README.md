@@ -12,7 +12,7 @@ A Windows calculator in the Apple Liquid Glass style. C# 12 and WPF on .NET 8, M
 - **Exact arithmetic.** `decimal` everywhere, rounded to 12 places (`MidpointRounding.ToEven`); `0.1 + 0.2 == 0.3` literally. Only `sin/cos/log/exp` go through `double`.
 - **Undo/redo through the Command pattern.** Every key press is an `ICalcCommand` with `Execute` and `Undo`.
 - **An explicit input state machine** (`CalcPhase`) with invariants the tests check after every press.
-- **MVVM.** The view only binds to the view model; the code-behind has nothing but animations.
+- **MVVM.** The view only binds to the view model; the code-behind has only animations and the theme menu.
 
 The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, so its tests run on Linux in CI.
 
@@ -20,12 +20,18 @@ The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, s
 
 ```powershell
 dotnet run --project src\CalcPro.Wpf
-dotnet test CalcPro.sln                  # 298 tests
+dotnet test CalcPro.sln                  # 310 tests
 ..\build.ps1 -Only wpf                   # portable .exe and installer into ..\dist
 dotnet run --project tools\CalcPro.Screenshots   # the README frames
 ```
 
 The portable build is a self-contained single file (about 50 MB compressed); no .NET is needed on the target machine. The installer is Inno Setup (`installer\CalcPro.iss`) and installs for the current user without administrator rights.
+
+## Themes
+
+The five themes of Paint Pro, as the same kind of resource dictionaries (`Resources/Themes/*.xaml`) with the same colours. The palette button in the header opens the list; the window changes at once, and the choice is kept in `%APPDATA%\CalcPro\theme.txt`. `ThemeFileTests` reads the dictionaries as XML: the same keys in all five, readable text on the keys of every theme, and no `StaticResource` to a theme key anywhere in the markup.
+
+<img src="docs/screenshots/themes.png" width="900" alt="The five themes">
 
 ## Grammar
 

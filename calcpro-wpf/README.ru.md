@@ -14,7 +14,7 @@ Windows-калькулятор в стиле Apple Liquid Glass. C# 12 + WPF н�
   `0.1 + 0.2 == 0.3` буквально. В `double` уходят только `sin/cos/log/exp`.
 - **Command Pattern для undo/redo.** Каждое нажатие — объект `ICalcCommand` с `Execute`/`Undo`.
 - **Явный автомат состояний** `CalcPhase` с проверяемыми инвариантами (см. ниже).
-- **MVVM.** View только привязывается к ViewModel; в code-behind лишь анимации.
+- **MVVM.** View только привязывается к ViewModel; в code-behind лишь анимации и меню тем.
 
 ## Запуск и сборка
 
@@ -38,9 +38,15 @@ CalcPro.sln
 │   └── Commands/              Digit, Operator (+ постфиксный %), Paren, Equals, Clear/ClearEntry,
 │                              Backspace, Sign, Function, Constant, EnterValue, Memory
 ├── src/CalcPro.Wpf/           App, MainWindow, CalcViewModel, стили, иконка
-├── tests/CalcPro.Tests/       xUnit + FsCheck (298 тестов)
+├── tests/CalcPro.Tests/       xUnit + FsCheck (310 тестов)
 └── installer/CalcPro.iss
 ```
+
+## Темы
+
+Пять тем Paint Pro - такие же словари ресурсов (`Resources/Themes/*.xaml`) с теми же цветами. Список открывает кнопка-палитра в заголовке, окно перекрашивается сразу, выбор хранится в `%APPDATA%\CalcPro\theme.txt`. `ThemeFileTests` читает словари как XML: у всех пяти одни ключи, текст на кнопках читается в любой теме, и нигде в разметке нет `StaticResource` к ключу темы.
+
+<img src="docs/screenshots/themes.png" width="900" alt="Пять тем">
 
 ## Грамматика
 

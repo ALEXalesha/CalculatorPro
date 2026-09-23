@@ -19,12 +19,18 @@
   `2nd`, степени, корни, `ln log₁₀ x!`, тригонометрия, `Rad`, `π e Rand`.
 - История: 200 записей, клик по записи продолжает вычисление с её результатом.
 
+## Темы
+
+Пять тем Paint Pro в меню `•••`, раздел «Тема»; выбор запоминается. Клавиши операций берут акцент темы вместо оранжевого iPhone, как кнопки Paint.
+
+<img src="docs/screenshots/themes.png" width="900" alt="Пять тем">
+
 ## Запуск и сборка
 
 ```powershell
 npm ci
 npm start              # запуск (F12 — DevTools, только из исходников)
-npm test               # 45 unit- и property-тестов
+npm test               # 54 unit- и property-тестов
 npm run test:e2e       # e2e в настоящем Electron
 ..\build.ps1 -Only ios     # portable + NSIS-установщик в ..\dist
 ```

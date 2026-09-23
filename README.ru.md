@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 461 тест, большая часть — свойства на случайных входах.**
+**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 491 тест, большая часть — свойства на случайных входах.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
 
@@ -26,6 +26,12 @@
 
 <img src="ios-calculator/docs/screenshots/modes.png" width="760" alt="Calculator iOS 26">
 
+## Темы
+
+У всех трёх те же пять тем, что в Paint Pro, с теми же цветами: «Стеклянная» (по умолчанию), «Строгая», «Светлая», «Ночная» и «Тёплая». Калькуляторы и Paint задумывались в одном оформлении, теперь так и есть. Тема выбирается кнопкой-палитрой (Calc Pro, Calc Pro Glass) или в меню `•••` (Calculator iOS 26), окно перекрашивается сразу, выбор запоминается до следующего запуска.
+
+<img src="calcpro-glass/docs/screenshots/themes.png" width="900" alt="Пять тем Paint Pro в Calc Pro Glass">
+
 ## Быстрый старт
 
 Нужны .NET SDK 8+, Node.js 20+ и Inno Setup 6 (для установщика Calc Pro).
@@ -39,9 +45,9 @@
 Результат в `dist/`:
 
 ```
-CalcPro-1.2.0-Portable.exe          CalcPro-1.2.0-Setup.exe
-CalcProGlass-1.2.0-Portable.exe     CalcProGlass-1.2.0-Setup.exe
-CalculatorIOS26-1.2.0-Portable.exe  CalculatorIOS26-1.2.0-Setup.exe
+CalcPro-1.3.0-Portable.exe          CalcPro-1.3.0-Setup.exe
+CalcProGlass-1.3.0-Portable.exe     CalcProGlass-1.3.0-Setup.exe
+CalculatorIOS26-1.3.0-Portable.exe  CalculatorIOS26-1.3.0-Setup.exe
 ```
 
 Запуск из исходников:
@@ -55,9 +61,9 @@ cd ios-calculator; npm ci; npm start
 ## Тесты
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 298 тестов (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 118 unit + e2e в Electron
-cd ios-calculator; npm test; npm run test:e2e # 45 unit + e2e в Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 310 тестов (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 127 unit + e2e в Electron
+cd ios-calculator; npm test; npm run test:e2e # 54 unit + e2e в Electron
 ```
 
 Основа — property-based тесты: генератор выдаёт тысячи случайных выражений и
@@ -69,6 +75,8 @@ cd ios-calculator; npm test; npm run test:e2e # 45 unit + e2e в Electron
 к устаревшему экрану (`0E`), а следующая цифра всё стирала. Кадры для README нашли ещё
 два в Calc Pro: строка выражения показывала `*` и `/`, хотя на кнопках `×` и `÷`, а
 значок памяти растягивался в высокую полоску.
+
+Проверки тем читают сами файлы тем: у всех пяти один набор ключей, текст на своих клавишах в любой теме не бледнее 4.5:1, а к цветам темы разметка обращается только через тему. Они нашли, что у клавиш AC, ± и % в двух темах контраст ниже нормы: 3.37:1 в «Стеклянной» и 2.60:1 в «Строгой». Исправлено до выпуска.
 
 CI на каждый пуш гоняет тесты движков на C# и JavaScript. e2e требуют настоящего окна
 Electron и запускаются локально перед выпуском.
