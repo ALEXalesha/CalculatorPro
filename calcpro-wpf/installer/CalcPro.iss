@@ -15,7 +15,7 @@
 #endif
 
 #define MyAppName "Calc Pro"
-#define MyAppPublisher "the author"
+#define MyAppPublisher "ALEXalesha"
 #define MyAppExeName "CalcPro.exe"
 #define AppIcon "..\src\CalcPro.Wpf\Resources\app.ico"
 
