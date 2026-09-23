@@ -1,4 +1,18 @@
-# Calc Pro Glass (Electron)
+<div align="center">
+
+# Calc Pro Glass
+
+**Калькулятор в стиле Apple Liquid Glass с тремя режимами: обычный, инженерный и дроби «в столбик». Парсер без `eval`, движок проверен свойствами на fast-check.**
+
+[Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
+
+[![CI](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/ALEXalesha/CalculatorPro?color=16a34a)](https://github.com/ALEXalesha/CalculatorPro/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+<img src="docs/screenshots/modes.png" width="900" alt="Три режима: Standard, Scientific и Fraction">
+
+</div>
 
 Калькулятор в стиле Apple Liquid Glass: скруглённое прозрачное окно без рамки,
 градиентная подложка, стеклянные круглые кнопки. Три режима:
@@ -17,9 +31,9 @@
 ```powershell
 npm ci
 npm start              # запуск из исходников
-npm test               # 111 unit/property-тестов (node:test + fast-check)
+npm test               # 114 unit/property-тестов (node:test + fast-check)
 npm run test:e2e       # e2e в настоящем Electron
-..\build.ps1 -Only glass   # portable + NSIS-установщик в ..\dist
+npm run dist           # portable + NSIS-установщик в dist\
 ```
 
 ## Устройство
@@ -52,3 +66,27 @@ e2e/smoke.js     скрытое окно Electron, клики, проверки,
 
 `contextIsolation`, `sandbox`, без `nodeIntegration`; Content-Security-Policy запрещает
 любые скрипты, кроме своих файлов.
+
+## Кадры для README собираются программой
+
+`tools/make-screenshots.js` открывает настоящую страницу в скрытом окне того же
+размера, что у приложения, в отдельной сессии в памяти (история человека в кадр
+не попадает), нажимает кнопки кликами, как e2e-тест, и снимает кадр с самой
+страницы через `capturePage()`.
+
+```powershell
+npx electron tools/make-screenshots.js
+```
+
+Первая версия скрипта снимала каждый кадр на одно нажатие позже: скрытое окно
+Электрона перерисовывается с опозданием. Помогли `backgroundThrottling: false` и
+ожидание двух кадров отрисовки перед снимком.
+
+А сам кадр режима дробей нашёл ошибку в программе: строка над результатом и
+запись в истории показывали `1/2 + 1/3` как `12 + 13`. Текст собирался
+вырезанием тегов из дроби «в столбик», и черта пропадала. Теперь он строится из
+самих дробей, а свойство на fast-check требует ровно одну черту на каждую дробь.
+
+## Лицензия
+
+MIT, файл [LICENSE](LICENSE).
