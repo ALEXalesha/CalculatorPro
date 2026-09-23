@@ -8,7 +8,9 @@
             <ResourceDictionary.MergedDictionaries>
                 <ui:ThemesDictionary Theme="Dark" />
                 <ui:ControlsDictionary />
-                <ResourceDictionary Source="Resources/Brushes.xaml" />
+                <!-- Словарь ТЕМЫ. Его подменяет ThemeService на ходу; остальные словари
+                     обращаются к его ключам через DynamicResource. -->
+                <ResourceDictionary Source="Resources/Themes/Glass.xaml" />
                 <ResourceDictionary Source="Styles/Theme.xaml" />
                 <ResourceDictionary Source="Styles/GlassPanel.xaml" />
                 <ResourceDictionary Source="Styles/GlassButton.xaml" />

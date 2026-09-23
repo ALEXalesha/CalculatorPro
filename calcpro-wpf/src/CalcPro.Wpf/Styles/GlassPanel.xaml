@@ -16,7 +16,7 @@
           3. ContentPresenter on top of both
     -->
     <Style x:Key="GlassPanel" TargetType="ContentControl">
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
@@ -24,14 +24,14 @@
                 <ControlTemplate TargetType="ContentControl">
                     <Grid>
                         <Border CornerRadius="22"
-                                Background="{StaticResource GlassBg}"
-                                BorderBrush="{StaticResource GlassBorder}"
+                                Background="{DynamicResource GlassBg}"
+                                BorderBrush="{DynamicResource GlassBorder}"
                                 BorderThickness="1"
                                 Effect="{StaticResource PanelShadow}" />
 
                         <!-- Specular ::before -->
                         <Border CornerRadius="22"
-                                Background="{StaticResource PanelSpecular}"
+                                Background="{DynamicResource PanelSpecular}"
                                 IsHitTestVisible="False" />
 
                         <ContentPresenter Margin="{TemplateBinding Padding}" />
@@ -48,11 +48,11 @@
                 <ControlTemplate TargetType="ContentControl">
                     <Grid>
                         <Border CornerRadius="16"
-                                Background="{StaticResource DisplayBg}"
-                                BorderBrush="{StaticResource GlassBorder}"
+                                Background="{DynamicResource DisplayBg}"
+                                BorderBrush="{DynamicResource GlassBorder}"
                                 BorderThickness="1" />
                         <Border CornerRadius="16"
-                                Background="{StaticResource PanelSpecular}"
+                                Background="{DynamicResource PanelSpecular}"
                                 IsHitTestVisible="False" />
                         <ContentPresenter Margin="{TemplateBinding Padding}" />
                     </Grid>

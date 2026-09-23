@@ -3,15 +3,18 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Controls.Primitives;
+using CalcPro.Core.Services;
+using CalcPro.Wpf.Services;
 using CalcPro.Wpf.ViewModels;
 
 namespace CalcPro.Wpf;
 
 /// <summary>
 /// View code-behind is intentionally thin: it owns only purely-visual concerns
-/// that don't belong in the ViewModel — the result animation and the
-/// scientific-mode column width animation. All state mutation flows through
-/// the bound CalcViewModel commands.
+/// that don't belong in the ViewModel — the result animation, the
+/// scientific-mode column width animation and the theme menu. All calculator
+/// state mutation flows through the bound CalcViewModel commands.
 /// </summary>
 public partial class MainWindow : Window
 {
@@ -19,6 +22,33 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Loaded += OnLoaded;
+    }
+
+    /// <summary>
+    /// Меню тем под кнопкой-палитрой: пять тем Paint Pro, галочка у текущей. Выбор
+    /// перекрашивает окно сразу и запоминается до следующего запуска.
+    /// </summary>
+    private void OnThemeButtonClick(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = ThemeButton, Placement = PlacementMode.Bottom };
+        foreach (var theme in ThemeCatalog.All)
+        {
+            var item = new MenuItem
+            {
+                Header = theme.Name,
+                ToolTip = theme.Note,
+                IsCheckable = false,
+                IsChecked = theme.Id == ThemeService.Current,
+                Tag = theme.Id,
+            };
+            item.Click += (_, _) =>
+            {
+                var id = ThemeService.Apply((string)item.Tag);
+                ThemeService.Save(id);
+            };
+            menu.Items.Add(item);
+        }
+        menu.IsOpen = true;
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -73,7 +103,8 @@ public partial class MainWindow : Window
 
         var glow = new System.Windows.Media.Effects.DropShadowEffect
         {
-            Color = Color.FromRgb(0x5B, 0x8D, 0xEF),
+            // Вспышка цветом акцента текущей темы, а не всегда синим «Стеклянной».
+            Color = (TryFindResource("AccentBrush") as SolidColorBrush)?.Color ?? Color.FromRgb(0x5B, 0x8D, 0xEF),
             BlurRadius = 30,
             ShadowDepth = 0,
             Opacity = 0.9
