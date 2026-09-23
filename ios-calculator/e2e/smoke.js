@@ -78,6 +78,22 @@ app.whenReady().then(async () => {
   fs.writeFileSync(out, (await win.webContents.capturePage()).toPNG());
   console.log('screenshot:', out);
 
+  // Темы Paint Pro в меню «•••»: смена цветов и память о выборе.
+  const css = v => js(`getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(v)}).trim()`);
+  check('glass theme by default', await js('document.documentElement.getAttribute("data-theme")'), null);
+  const glassBase = await css('--app-base');
+  check('five themes in the menu', await js('[...document.querySelectorAll("#themeItems .theme-item")].map(b => b.dataset.theme).join(",")'),
+    'glass,formal,light,night,warm');
+  await click('#menuBtn');
+  await click('#themeItems .theme-item[data-theme="warm"]');
+  check('warm theme applied', await js('document.documentElement.getAttribute("data-theme")'), 'warm');
+  check('warm background differs', (await css('--app-base')) !== glassBase, true);
+  check('choice remembered', await js('localStorage.getItem("calc-theme")'), 'warm');
+  check('checkmark moved', await js('document.querySelector("#themeItems .theme-item.active").dataset.theme'), 'warm');
+  await win.webContents.reload();
+  await new Promise(r => win.webContents.once('did-finish-load', r));
+  check('theme survives a restart', await js('document.documentElement.getAttribute("data-theme")'), 'warm');
+
   check('no console errors', errors.join(' | '), '');
   console.log(failures ? `${failures} check(s) failed` : 'all e2e checks passed');
   app.exit(failures ? 1 : 0);

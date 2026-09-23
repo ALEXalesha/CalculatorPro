@@ -18,7 +18,7 @@ const H = 720;
 const GAP = 24;
 
 app.whenReady().then(async () => {
-  setTimeout(() => { console.error('timeout'); app.exit(2); }, 30000);
+  setTimeout(() => { console.error('timeout'); app.exit(2); }, 60000);
   const win = new BrowserWindow({
     width: W, height: H, show: false, frame: false, transparent: true,
     webPreferences: {
@@ -63,19 +63,32 @@ app.whenReady().then(async () => {
   const history = await frame('history.png');
 
   const scale = basic.getSize().width / W;
-  const w = Math.round((W * 3 + GAP * 2) * scale);
-  const h = Math.round(H * scale);
-  const canvas = Buffer.alloc(w * h * 4);
-  [basic, scientific, history].forEach((img, i) => {
-    const bmp = img.toBitmap();
-    const { width, height } = img.getSize();
-    const x0 = Math.round(i * (W + GAP) * scale);
-    for (let y = 0; y < height; y++) {
-      bmp.copy(canvas, ((y * w) + x0) * 4, y * width * 4, (y + 1) * width * 4);
-    }
-  });
-  fs.writeFileSync(path.join(OUT, 'modes.png'),
-    nativeImage.createFromBitmap(canvas, { width: w, height: h, scaleFactor: scale }).toPNG());
-  console.log('  modes.png');
+  const join = (images, name) => {
+    const w = Math.round((W * images.length + GAP * (images.length - 1)) * scale);
+    const h = Math.round(H * scale);
+    const canvas = Buffer.alloc(w * h * 4);
+    images.forEach((img, i) => {
+      const bmp = img.toBitmap();
+      const { width, height } = img.getSize();
+      const x0 = Math.round(i * (W + GAP) * scale);
+      for (let y = 0; y < height; y++) {
+        bmp.copy(canvas, ((y * w) + x0) * 4, y * width * 4, (y + 1) * width * 4);
+      }
+    });
+    fs.writeFileSync(path.join(OUT, name),
+      nativeImage.createFromBitmap(canvas, { width: w, height: h, scaleFactor: scale }).toPNG());
+    console.log(`  ${name}`);
+  };
+  join([basic, scientific, history], 'modes.png');
+
+  // Пять тем Paint Pro на одном примере; тема ставится тем же CalcTheme.apply, что из меню.
+  await click('#historyBack');
+  const themed = [];
+  for (const id of ['glass', 'formal', 'light', 'night', 'warm']) {
+    await js(`CalcTheme.apply(document.documentElement, ${JSON.stringify(id)}, null)`);
+    themed.push(await frame(`theme-${id}.png`));
+  }
+  join(themed, 'themes.png');
+  for (const id of ['glass', 'formal', 'light', 'night', 'warm']) fs.unlinkSync(path.join(OUT, `theme-${id}.png`));
   app.exit(0);
 }).catch((e) => { console.error(e); app.exit(1); });
