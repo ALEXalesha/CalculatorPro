@@ -1,0 +1,34 @@
+# Проверки на каждый пуш.
+#
+# Движок (src/calc-core.js) без DOM и без Windows, поэтому раннер ubuntu. Бинарник
+# Электрона unit-тестам не нужен и не скачивается. e2e (npm run test:e2e) гоняет
+# настоящую страницу в Электроне и запускается перед выпуском локально.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Проверки
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Зависимости
+        run: npm ci
+
+      - name: 114 тестов движка и свойства на fast-check
+        run: npm test
