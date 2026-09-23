@@ -213,3 +213,43 @@ for (const [expr, error] of ERROR_EXAMPLES) {
     assert.throws(() => C.evaluate(expr), { message: error });
   });
 }
+
+// ---------------------------------------------------------------- fraction text
+// Нашлось на кадре для README: строка над результатом в режиме Fraction
+// показывала «1/2 + 1/3» как «12 + 13». Текст собирался вырезанием тегов из
+// дроби «в столбик», и черта между числителем и знаменателем пропадала - та же
+// строка уходила и в панель истории.
+const cursorAt = { term: 0, slot: 'whole' };
+const term = (whole, num, den, op = null) => ({ whole, num, den, op });
+
+test('fraction text keeps the fraction bar', () => {
+  assert.equal(C.fractionExprText([term('', '1', '2', '+'), term('', '1', '3')], cursorAt), '1/2 + 1/3');
+});
+
+test('fraction text shows mixed numbers and every operator', () => {
+  const terms = [term('2', '1', '2', '*'), term('', '3', '4', '/'), term('5', '', '', '-'), term('', '7', '8')];
+  assert.equal(C.fractionExprText(terms, cursorAt), '2 1/2 × 3/4 ÷ 5 − 7/8');
+});
+
+test('fraction text: one bar per fraction term, digits never glued across it', () => {
+  const digits = fc.stringMatching(/^[1-9][0-9]{0,2}$/);
+  const anyTerm = fc.record({
+    whole: fc.oneof(fc.constant(''), digits),
+    frac: fc.boolean(),
+    num: digits, den: digits,
+    op: fc.constantFrom('+', '-', '*', '/'),
+  });
+  fc.assert(fc.property(fc.array(anyTerm, { minLength: 1, maxLength: 5 }), (raw) => {
+    const terms = raw.map((t, i) => {
+      const withFrac = t.frac || !t.whole; // терм из одного целого - без дроби
+      return term(t.whole, withFrac ? t.num : '', withFrac ? t.den : '',
+        i < raw.length - 1 ? t.op : null);
+    });
+    const text = C.fractionExprText(terms, cursorAt);
+    const fractions = terms.filter((t) => t.num !== '' || t.den !== '').length;
+    assert.equal((text.match(/\//g) || []).length, fractions, text);
+    for (const t of terms) {
+      if (t.num !== '' && t.den !== '') assert.ok(text.includes(`${t.num}/${t.den}`), `${text} без ${t.num}/${t.den}`);
+    }
+  }), RUNS);
+});
