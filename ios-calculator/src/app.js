@@ -148,6 +148,29 @@
 
   $('sciToggle').addEventListener('click', () => setScientific(!calcEl.classList.contains('scientific')));
 
+  // ====== ТЕМЫ: те же пять, что в Paint Pro. Логика и память - в theme.js ======
+  const themeItems = $('themeItems');
+  function renderThemeItems() {
+    const active = CalcTheme.current(document.documentElement);
+    themeItems.innerHTML = '';
+    for (const t of CalcTheme.THEMES) {
+      const item = document.createElement('div');
+      item.className = 'menu-item theme-item' + (t.id === active ? ' active' : '');
+      item.dataset.theme = t.id;
+      item.title = t.note;
+      item.innerHTML = '<span></span><span class="check">✓</span>';
+      item.firstChild.textContent = t.name;
+      themeItems.appendChild(item);
+    }
+  }
+  renderThemeItems();
+  themeItems.addEventListener('click', e => {
+    const item = e.target.closest('.theme-item');
+    if (!item) return;
+    CalcTheme.apply(document.documentElement, item.dataset.theme, CalcTheme.storage());
+    renderThemeItems();
+  });
+
   // ====== HISTORY PANEL ======
   const historyPanel = $('historyPanel');
   const historyList = $('historyList');
