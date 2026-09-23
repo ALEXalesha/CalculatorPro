@@ -944,6 +944,15 @@
       }
 
       if (k === 'EE') {
+        // After "=" the result becomes the mantissa: 5 = EE 3 = → 5000. Before this
+        // the E was glued on while justEvaluated stayed set, so the display showed
+        // "0E" for result 0 and the next digit wiped it (found by the random-keys
+        // property). A result already in e-notation or an error takes no exponent.
+        if (state.justEvaluated) {
+          const r = state.result !== null ? formatNumber(state.result) : '';
+          if (!/^-?\d+(\.\d+)?$/.test(r)) return;
+          startFromResult(r);
+        }
         // Exponent marker only makes sense right after a digit.
         if (/\d$/.test(state.expression)) state.expression += 'E';
         setExpression(state.expression);

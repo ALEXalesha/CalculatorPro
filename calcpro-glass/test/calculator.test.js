@@ -156,6 +156,11 @@ const SCENARIOS = [
   ['standard', '5 × +/- 3 =', '-15'],
   ['standard', '5 − 3 +/- =', '8'],
   ['scientific', '1 EE 3 =', '1000'],
+  // EE после "=" продолжает результат, а не приклеивает E к устаревшему экрану.
+  ['scientific', '5 = EE 3 =', '5000'],
+  ['scientific', '2 + 3 = EE 2 =', '500'],
+  ['scientific', '0 = EE', '0E'],
+  ['scientific', '0 = EE 2 =', '0'],
   ['scientific', '1 6 = √', '4'],
   ['scientific', '4 = 1/x', '0.25'],
   ['scientific', '1 a⁄b 4 =', '0.25'],
