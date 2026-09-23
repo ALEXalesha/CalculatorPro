@@ -31,10 +31,16 @@
 ```powershell
 npm ci
 npm start              # запуск из исходников
-npm test               # 118 unit- и property-тестов (node:test + fast-check)
+npm test               # 127 unit- и property-тестов (node:test + fast-check)
 npm run test:e2e       # e2e в настоящем Electron
 npm run dist           # portable + NSIS-установщик в dist\
 ```
+
+## Темы
+
+Пять тем Paint Pro с его цветами: выбор кнопкой-палитрой рядом с «Историей», выбор запоминается.
+
+<img src="docs/screenshots/themes.png" width="900" alt="Пять тем">
 
 ## Устройство
 

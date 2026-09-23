@@ -22,6 +22,12 @@
 
 History (50 entries) and memory are kept in localStorage.
 
+## Themes
+
+The five themes of Paint Pro, with its colours: pick one from the palette button next to History. The choice is remembered.
+
+<img src="docs/screenshots/themes.png" width="900" alt="The five themes">
+
 ## The engine
 
 `src/calc-core.js` has no DOM and is shared by the page and the Node tests. The parser is shunting-yard with no `eval`. The grammar: `+ -` < `* /` < unary minus < `^` (right-associative), so `-2^2` is -4 and `2^-2` is 0.25. Implicit multiplication works: `2(3)`, `(1)(2)`, `2π`, `2sin(30)`. Unclosed brackets close on `=`.
@@ -30,7 +36,7 @@ History (50 entries) and memory are kept in localStorage.
 
 ```powershell
 npm ci
-npm test            # 118 unit and property tests (node:test + fast-check)
+npm test            # 127 unit and property tests (node:test + fast-check)
 npm run test:e2e    # the real page in Electron: clicks, checks, no console errors
 ```
 

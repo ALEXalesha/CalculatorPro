@@ -17,12 +17,18 @@ A copy of the Calculator app from iOS 26 in the Liquid Glass style: a coloured b
 - The scientific panel (the `•••` menu or the «Научные функции» bar): `sinh cosh`, memory, `2nd`, powers, roots, `ln log₁₀ x!`, trigonometry, `Rad`, `π e Rand`.
 - History keeps 200 entries; clicking one continues the calculation with its result.
 
+## Themes
+
+The five themes of Paint Pro under «Тема» in the `•••` menu; the choice is remembered. Operators take the accent of the theme instead of the iPhone orange, as Paint's buttons do.
+
+<img src="docs/screenshots/themes.png" width="900" alt="The five themes">
+
 ## Running and building
 
 ```powershell
 npm ci
 npm start              # F12 opens DevTools, only when run from sources
-npm test               # 45 unit and property tests
+npm test               # 54 unit and property tests
 npm run test:e2e       # the real page in Electron
 npx electron tools/make-screenshots.js   # the README frames
 ..\build.ps1 -Only ios # portable exe and NSIS installer into ..\dist
