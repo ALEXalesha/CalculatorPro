@@ -35,6 +35,16 @@ public static class DisplayFormat
         return s.StartsWith('-') ? "(" + s + ")" : s;
     }
 
+    /// Expression text as the buttons label it: "12 * 3 / (-4)" → "12 × 3 ÷ (−4)".
+    /// The engine keeps ASCII operators; this is for the screen only. Character for
+    /// character, and the tokenizer reads ×, ÷ and − too, so the text stays valid input.
+    public static string Pretty(string expression) =>
+        string.Create(expression.Length, expression, static (span, src) =>
+        {
+            for (var i = 0; i < src.Length; i++)
+                span[i] = src[i] switch { '*' => '×', '/' => '÷', '-' => '−', var c => c };
+        });
+
     /// Same as <see cref="Operand(decimal)"/> but for the raw display text.
     public static string Operand(string display) =>
         TryParse(display, out var v) ? Operand(v) : "0";
