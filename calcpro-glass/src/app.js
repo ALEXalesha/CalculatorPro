@@ -248,6 +248,49 @@
   });
 
   // =================================================================
+  // ТЕМЫ: те же пять, что в Paint Pro. Логика и память - в theme.js.
+  // =================================================================
+  const themeBtn = $('btnTheme');
+  const themeMenu = $('themeMenu');
+  function renderThemeMenu() {
+    const active = CalcTheme.current(document.documentElement);
+    themeMenu.innerHTML = '';
+    for (const t of CalcTheme.THEMES) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'theme-item';
+      item.dataset.theme = t.id;
+      item.setAttribute('role', 'menuitemradio');
+      item.setAttribute('aria-checked', String(t.id === active));
+      item.innerHTML = '<span class="check"></span><span><span class="name"></span><span class="note"></span></span>';
+      item.querySelector('.check').textContent = t.id === active ? '✓' : '';
+      item.querySelector('.name').textContent = t.name;
+      item.querySelector('.note').textContent = t.note;
+      themeMenu.appendChild(item);
+    }
+  }
+  function setThemeMenu(open) {
+    themeMenu.classList.toggle('open', open);
+    themeBtn.classList.toggle('active', open);
+    themeBtn.setAttribute('aria-expanded', String(open));
+  }
+  renderThemeMenu();
+  themeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    setThemeMenu(!themeMenu.classList.contains('open'));
+  });
+  themeMenu.addEventListener('click', e => {
+    const item = e.target.closest('.theme-item');
+    if (!item) return;
+    CalcTheme.apply(document.documentElement, item.dataset.theme, CalcTheme.storage());
+    renderThemeMenu();
+    setThemeMenu(false);
+  });
+  document.addEventListener('click', e => {
+    if (themeMenu.classList.contains('open') && !themeMenu.contains(e.target)) setThemeMenu(false);
+  });
+
+  // =================================================================
   // EVENT WIRING
   // =================================================================
   DOM.calcKeys.addEventListener('mousedown', e => {
@@ -291,6 +334,12 @@
   const FRACTION_KEYS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', '/': 'a/b' };
 
   document.addEventListener('keydown', e => {
+    // Открытый список тем закрывается Escape, а не стирает набранное (Escape = AC).
+    if (e.key === 'Escape' && themeMenu.classList.contains('open')) {
+      e.preventDefault();
+      setThemeMenu(false);
+      return;
+    }
     if (e.ctrlKey && e.key.toLowerCase() === 'h') {
       e.preventDefault();
       DOM.btnHistory.click();

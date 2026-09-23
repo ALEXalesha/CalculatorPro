@@ -5,39 +5,20 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calc Pro</title>
+<link rel="stylesheet" href="themes.css">
+<script src="theme.js"></script>
 <style>
 /* ===== Reset ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ===== Liquid-Glass Tokens (verbatim from Paint Pro) ===== */
+/* ===== Клавиши: цвета берутся из темы (themes.css) ===== */
 :root {
-  --glass-bg:           rgba(255,255,255,0.08);
-  --glass-bg-strong:    rgba(255,255,255,0.14);
-  --glass-bg-soft:      rgba(255,255,255,0.05);
-  --glass-border:       rgba(255,255,255,0.18);
-  --glass-border-strong:rgba(255,255,255,0.32);
-  --glass-highlight:    rgba(255,255,255,0.45);
-  --glass-shadow:       0 8px 32px rgba(0,0,0,0.35);
-  --glass-inset:        inset 0 1px 0 rgba(255,255,255,0.35),
-                        inset 0 -1px 0 rgba(0,0,0,0.15);
-  --blur:               blur(28px) saturate(190%);
-  --blur-strong:        blur(40px) saturate(220%);
-
-  --text:               #f4f4f8;
-  --text-dim:           rgba(244,244,248,0.62);
-
-  --accent:             #5b8def;
-  --accent-2:           #9d5bef;
-  --accent-grad:        linear-gradient(135deg,#5b8def 0%, #9d5bef 100%);
-  --accent-glow:        0 0 24px rgba(91,141,239,0.55);
-
-  /* Apple calculator palette */
-  --apple-orange:       linear-gradient(135deg, #ff9f0a 0%, #ff7a00 100%);
-  --apple-orange-hover: linear-gradient(135deg, #ffb340 0%, #ff8a1a 100%);
-  --apple-digit:        rgba(60,60,75,0.55);
-  --apple-digit-hover:  rgba(80,80,95,0.65);
-  --apple-util:         rgba(165,165,175,0.55);
-  --apple-util-hover:   rgba(190,190,200,0.7);
+  --apple-orange:       var(--accent-grad);
+  --apple-orange-hover: var(--accent-grad);
+  --apple-digit:        rgb(var(--key-rgb) / 0.55);
+  --apple-digit-hover:  rgb(var(--key-rgb) / 0.70);
+  --apple-util:         rgb(var(--util-rgb) / 0.62);
+  --apple-util-hover:   rgb(var(--util-rgb) / 0.78);
   --apple-del:          rgba(255,91,91,0.45);
   --apple-del-hover:    rgba(255,120,120,0.6);
 }
@@ -66,15 +47,11 @@ body {
   position: fixed; inset: 0;
   border-radius: 26px;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 10%, #ff6b9d 0%, transparent 35%),
-    radial-gradient(circle at 80% 20%, #4facfe 0%, transparent 40%),
-    radial-gradient(circle at 50% 80%, #ff9a56 0%, transparent 45%),
-    radial-gradient(circle at 90% 90%, #a78bfa 0%, transparent 35%),
-    #1a0a2e;
+  background-color: var(--app-base);
+  background-image: var(--app-bg);
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.18),
-    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 0 0 1px rgb(var(--ink) / 0.18),
+    inset 0 1px 0 rgb(var(--ink) / 0.35),
     inset 0 -1px 0 rgba(0,0,0,0.35),
     0 18px 60px rgba(0,0,0,0.55);
   display: flex;
@@ -87,8 +64,8 @@ body {
   pointer-events: none;
   border-radius: 26px;
   box-shadow:
-    inset 0 0 0 0.5px rgba(255,255,255,0.25),
-    inset 0 0 12px rgba(255,255,255,0.06);
+    inset 0 0 0 0.5px rgb(var(--ink) / 0.25),
+    inset 0 0 12px rgb(var(--ink) / 0.06);
   z-index: 250;
 }
 
@@ -100,7 +77,7 @@ body {
   position: absolute;
   top: 0; left: 0;
   height: 38px;
-  right: 90px; /* reserve space for win-controls */
+  right: 124px; /* reserve space for win-controls */
   -webkit-app-region: drag;
   z-index: 5;
 }
@@ -117,11 +94,11 @@ body {
 .win-btn {
   width: 26px; height: 26px;
   border-radius: 50%;
-  border: 0.5px solid rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.12);
+  border: 0.5px solid rgb(var(--ink) / 0.18);
+  background: rgb(var(--ink) / 0.12);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  color: #fff; cursor: pointer;
+  color: var(--text); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; line-height: 1;
   transition: background 0.15s ease;
@@ -129,9 +106,9 @@ body {
   outline: none;
 }
 .win-btn svg { pointer-events: none; }
-.win-btn:hover { background: rgba(255,255,255,0.22); }
+.win-btn:hover { background: rgb(var(--ink) / 0.22); }
 .win-btn.close:hover { background: rgba(255, 80, 80, 0.85); }
-.win-btn.history.active { background: rgba(91,141,239,0.55); }
+.win-btn.history.active { background: rgb(var(--accent-rgb) / 0.55); }
 
 /* ===== Header (drag handled by .drag-zone overlay, which sits above) ===== */
 .titlebar {
@@ -140,7 +117,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 90px 0 14px; /* right padding reserves space for win-controls */
+  padding: 0 124px 0 14px; /* right padding reserves space for win-controls */
   flex-shrink: 0;
 }
 
@@ -186,17 +163,17 @@ body {
 .tb-btn.close:hover {
   background: rgba(255, 80, 80, 0.55);
   border-color: rgba(255, 120, 120, 0.6);
-  color: #fff;
+  color: var(--text);
 }
 .tb-btn.minimize:hover {
-  background: rgba(255, 190, 50, 0.45);
+  background: rgb(var(--accent-rgb) / 0.45);
   border-color: rgba(255, 210, 80, 0.5);
-  color: #fff;
+  color: var(--text);
 }
 .tb-btn.history.active {
-  background: rgba(91,141,239,0.45);
-  border-color: rgba(91,141,239,0.6);
-  color: #fff;
+  background: rgb(var(--accent-rgb) / 0.45);
+  border-color: rgb(var(--accent-rgb) / 0.6);
+  color: var(--text);
 }
 
 /* ===== Mode Tabs ===== */
@@ -242,9 +219,9 @@ body {
 
 .mode-tab.active {
   background: var(--accent-grad);
-  color: #fff;
+  color: var(--on-accent);
   border-color: transparent;
-  box-shadow: 0 2px 14px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.3);
+  box-shadow: 0 2px 14px rgb(var(--accent-rgb) / 0.45), inset 0 1px 0 rgb(var(--ink) / 0.3);
 }
 
 .mode-tab:not(.active):hover {
@@ -279,9 +256,9 @@ body {
 }
 
 .angle-pill.rad {
-  background: rgba(91,141,239,0.25);
-  color: #c5d9ff;
-  border-color: rgba(91,141,239,0.45);
+  background: rgb(var(--accent-rgb) / 0.25);
+  color: var(--text);
+  border-color: rgb(var(--accent-rgb) / 0.45);
 }
 
 /* ===== Display (no card, just floating text) ===== */
@@ -346,7 +323,7 @@ body {
   letter-spacing: 0.01em;
   opacity: 0;
   transition: opacity 0.3s ease;
-  text-shadow: 0 0 12px rgba(91,141,239,0.45);
+  text-shadow: 0 0 12px rgb(var(--accent-rgb) / 0.45);
 }
 .fraction-line.visible { opacity: 1; }
 
@@ -369,14 +346,14 @@ body {
   margin: 2px 0; border-radius: 1px; min-width: 22px;
 }
 .frac-active {
-  background: rgba(91,141,239,0.28);
+  background: rgb(var(--accent-rgb) / 0.28);
   border-radius: 4px;
-  box-shadow: 0 0 0 1px rgba(91,141,239,0.5), 0 0 12px rgba(91,141,239,0.4);
+  box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / 0.5), 0 0 12px rgb(var(--accent-rgb) / 0.4);
   animation: fracBlink 1s ease-in-out infinite;
 }
 @keyframes fracBlink {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(91,141,239,0.5), 0 0 12px rgba(91,141,239,0.4); }
-  50%      { box-shadow: 0 0 0 1px rgba(91,141,239,0.75), 0 0 18px rgba(91,141,239,0.65); }
+  0%, 100% { box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / 0.5), 0 0 12px rgb(var(--accent-rgb) / 0.4); }
+  50%      { box-shadow: 0 0 0 1px rgb(var(--accent-rgb) / 0.75), 0 0 18px rgb(var(--accent-rgb) / 0.65); }
 }
 .frac-placeholder { color: var(--text-dim); font-weight: 300; opacity: 0.55; }
 .frac-op { padding: 0 8px; color: var(--accent); font-weight: 500; }
@@ -469,65 +446,67 @@ body {
 .btn-digit {
   background: var(--apple-digit);
   font-weight: 400;
-  color: #fff;
+  color: var(--text);
 }
 .btn-digit:hover { background: var(--apple-digit-hover); }
 
 /* Operator buttons (orange) */
 .btn-op {
   background: var(--apple-orange);
-  border-color: rgba(255,180,80,0.45);
-  color: #fff;
+  border-color: rgb(var(--accent-rgb) / 0.45);
+  color: var(--on-accent);
   font-size: clamp(17px, 3.6vh, 32px);
   font-weight: 500;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.45),
+    inset 0 1px 0 rgb(var(--ink) / 0.45),
     inset 0 -1px 0 rgba(0,0,0,0.1),
-    0 4px 18px rgba(255,140,40,0.42);
+    0 4px 18px rgb(var(--accent-rgb) / 0.42);
 }
 .btn-op:hover {
   background: var(--apple-orange-hover);
+  filter: brightness(1.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 1px 0 rgb(var(--ink) / 0.55),
     inset 0 -1px 0 rgba(0,0,0,0.1),
-    0 6px 24px rgba(255,160,40,0.55);
+    0 6px 24px rgb(var(--accent-rgb) / 0.55);
 }
 .btn-op.active-op {
-  background: linear-gradient(135deg, #ffffff 0%, #fff0d6 100%);
-  color: #ff8a1a;
+  background: var(--text);
+  color: var(--accent);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.85),
-    0 4px 22px rgba(255,160,40,0.65);
+    inset 0 1px 0 rgb(var(--ink) / 0.85),
+    0 4px 22px rgb(var(--accent-rgb) / 0.65);
 }
 .calc-keys.scientific .btn-op { font-size: clamp(15px, 2.8vh, 24px); }
 
 /* Equals = same orange */
 .btn-eq {
   background: var(--apple-orange);
-  border-color: rgba(255,180,80,0.45);
-  color: #fff;
+  border-color: rgb(var(--accent-rgb) / 0.45);
+  color: var(--on-accent);
   font-size: clamp(17px, 3.6vh, 32px);
   font-weight: 500;
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.45),
-    0 4px 18px rgba(255,140,40,0.42);
+    inset 0 1px 0 rgb(var(--ink) / 0.45),
+    0 4px 18px rgb(var(--accent-rgb) / 0.42);
 }
 .btn-eq:hover {
   background: var(--apple-orange-hover);
+  filter: brightness(1.12);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.55),
-    0 6px 24px rgba(255,160,40,0.6);
+    inset 0 1px 0 rgb(var(--ink) / 0.55),
+    0 6px 24px rgb(var(--accent-rgb) / 0.6);
 }
 .calc-keys.scientific .btn-eq { font-size: clamp(15px, 2.8vh, 24px); }
 
 /* Top-row utility (AC, +/-, %) — light glass, BLACK text */
 .btn-util {
   background: var(--apple-util);
-  color: #1a1a1a;
+  color: var(--util-text);
   font-weight: 500;
-  border-color: rgba(255,255,255,0.4);
+  border-color: rgb(var(--ink) / 0.4);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 1px 0 rgb(var(--ink) / 0.55),
     inset 0 -1px 0 rgba(0,0,0,0.05),
     0 4px 14px rgba(0,0,0,0.22);
 }
@@ -536,31 +515,31 @@ body {
 /* DEL / backspace — red tint, white text */
 .btn-del {
   background: var(--apple-del);
-  color: #fff;
+  color: var(--text);
   font-weight: 500;
-  border-color: rgba(255,140,140,0.5);
+  border-color: rgb(var(--accent-rgb) / 0.5);
 }
 .btn-del:hover { background: var(--apple-del-hover); }
 
 /* Scientific function buttons — softer dark glass, smaller */
 .btn-sci {
-  background: rgba(60,60,75,0.4);
-  color: #cfd6ff;
+  background: rgb(var(--key-rgb) / 0.4);
+  color: var(--text);
   font-size: clamp(11px, 2vh, 17px);
   font-weight: 500;
-  border-color: rgba(255,255,255,0.14);
+  border-color: rgb(var(--ink) / 0.14);
 }
 .calc-keys.scientific .btn-sci {
   font-size: clamp(11px, 2vh, 17px);
 }
-.btn-sci:hover { background: rgba(70,70,90,0.7); color: #fff; }
+.btn-sci:hover { background: rgb(var(--key-rgb) / 0.7); color: var(--text); }
 .btn-sci.toggle-on {
-  background: rgba(91,141,239,0.4);
-  color: #fff;
-  border-color: rgba(91,141,239,0.55);
+  background: rgb(var(--accent-rgb) / 0.4);
+  color: var(--text);
+  border-color: rgb(var(--accent-rgb) / 0.55);
   box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.4),
-    0 4px 18px rgba(91,141,239,0.5);
+    inset 0 1px 0 rgb(var(--ink) / 0.4),
+    0 4px 18px rgb(var(--accent-rgb) / 0.5);
 }
 
 /* Wide zero (capsule) */
@@ -577,11 +556,11 @@ body {
   border-radius: 50%;
   pointer-events: none;
   background: radial-gradient(circle,
-    rgba(255,255,255,0.55) 0%,
-    rgba(255,255,255,0.25) 35%,
+    rgb(var(--ink) / 0.55) 0%,
+    rgb(var(--ink) / 0.25) 35%,
     rgba(120,180,255,0.10) 70%,
     transparent 100%);
-  box-shadow: inset 0 0 12px rgba(255,255,255,0.4), 0 0 18px rgba(91,141,239,0.4);
+  box-shadow: inset 0 0 12px rgb(var(--ink) / 0.4), 0 0 18px rgb(var(--accent-rgb) / 0.4);
   transform: translate(-50%,-50%) scale(0);
   animation: rippleGrow 0.65s ease-out forwards;
   z-index: 5;
@@ -592,16 +571,57 @@ body {
   100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
 }
 
+/* ===== Меню тем ===== */
+.theme-menu {
+  position: absolute;
+  top: 40px; right: 10px;
+  min-width: 190px;
+  padding: 6px;
+  border-radius: 14px;
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border-strong);
+  backdrop-filter: var(--blur-strong);
+  -webkit-backdrop-filter: var(--blur-strong);
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+  z-index: 1001;
+  -webkit-app-region: no-drag;
+  opacity: 0; transform: translateY(-4px); pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.theme-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+/* Подложка под списком плотнее самого стекла: список лежит поверх клавиш, и без неё
+   надписи пунктов сливались бы с цифрами под ними. */
+.theme-menu::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: -1;
+  background: var(--app-base); opacity: 0.82;
+}
+.theme-item {
+  width: 100%;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border: none; border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  font: inherit; font-size: 13px; text-align: left;
+  cursor: pointer;
+}
+.theme-item:hover { background: var(--glass-bg-strong); }
+.theme-item .check { width: 14px; color: var(--accent); font-weight: 700; }
+.theme-item .note { display: block; font-size: 10.5px; color: var(--text-dim); margin-top: 1px; }
+.win-btn.theme.active { background: rgb(var(--accent-rgb) / 0.55); }
+
 /* ===== Tooltip ===== */
 [data-tip] { position: relative; }
 [data-tip]:hover::after {
   content: attr(data-tip);
   position: absolute; top: calc(100% + 8px); left: 50%;
   transform: translateX(-50%);
+  /* Подсказка тёмная в любой теме, и текст на ней всегда светлый - как подложки над
+     холстом в Paint: светлый текст темы на тёмной подложке пропал бы в светлой теме. */
   background: rgba(20,20,30,0.85);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  color: var(--text);
+  color: #f4f4f8;
   padding: 6px 10px; border-radius: 8px;
   font-size: 11px; font-weight: 500;
   white-space: nowrap; pointer-events: none;
@@ -630,11 +650,11 @@ body {
 .history-panel.open { transform: translateX(0); }
 
 .history-header {
-  padding: 12px 90px 12px 14px; /* reserve right space for win-controls */
+  padding: 12px 124px 12px 14px; /* reserve right space for win-controls */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgb(var(--ink) / 0.08);
   flex-shrink: 0;
 }
 
@@ -670,7 +690,7 @@ body {
 .history-list::-webkit-scrollbar { width: 8px; }
 .history-list::-webkit-scrollbar-track { background: transparent; }
 .history-list::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.18);
+  background: rgb(var(--ink) / 0.18);
   border-radius: 999px;
 }
 
@@ -748,7 +768,7 @@ body {
   animation: memFlash 0.45s ease;
 }
 @keyframes memFlash {
-  0%   { background: rgba(91,141,239,0.55); color: #fff; }
+  0%   { background: rgb(var(--accent-rgb) / 0.55); color: var(--text); }
   100% { background: var(--glass-bg-soft); }
 }
 
@@ -770,19 +790,25 @@ body {
 
 <!-- Window controls (top-right, floating) -->
 <div class="win-controls">
+  <button type="button" class="win-btn theme" id="btnTheme" title="Тема оформления" aria-haspopup="true" aria-expanded="false">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.5a6.5 6.5 0 1 0 0 13c.9 0 1.3-.6 1.3-1.2 0-.8-.7-1-.7-1.8 0-.7.6-1.2 1.3-1.2h1.6a3.5 3.5 0 0 0 3.5-3.5C15 3.9 11.9 1.5 8 1.5Z"/><circle cx="4.8" cy="7.2" r="0.9" fill="currentColor"/><circle cx="7.3" cy="4.4" r="0.9" fill="currentColor"/><circle cx="10.7" cy="5.2" r="0.9" fill="currentColor"/></svg>
+  </button>
   <button type="button" class="win-btn history" id="btnHistory" title="История (Ctrl+H)">
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <circle cx="12" cy="12" r="9"/>
       <polyline points="12 7 12 12 15 14"/>
     </svg>
   </button>
   <button type="button" class="win-btn" id="btnMinimize" title="Свернуть">
-    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5" stroke="white" stroke-width="1.5"/></svg>
+    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="1.5"/></svg>
   </button>
   <button type="button" class="win-btn close" id="btnClose" title="Закрыть">
-    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="white" stroke-width="1.5"/><line x1="8" y1="2" x2="2" y2="8" stroke="white" stroke-width="1.5"/></svg>
+    <svg width="10" height="10" viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="2" x2="2" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
   </button>
 </div>
+
+<!-- Список тем: те же пять, что в Paint Pro («Вид → Тема») -->
+<div class="theme-menu" id="themeMenu" role="menu" aria-label="Тема"></div>
 
 <!-- Header (title only; drag is on .drag-zone above) -->
 <div class="titlebar" id="titlebar">
