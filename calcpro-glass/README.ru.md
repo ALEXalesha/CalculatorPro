@@ -4,7 +4,7 @@
 
 **Калькулятор в стиле Apple Liquid Glass с тремя режимами: обычный, инженерный и дроби «в столбик». Парсер без `eval`, движок проверен свойствами на fast-check.**
 
-[Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
+[Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md) &nbsp;·&nbsp; [Все три калькулятора](../README.ru.md)
 
 [![CI](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ALEXalesha/CalculatorPro?color=16a34a)](https://github.com/ALEXalesha/CalculatorPro/releases/latest)
@@ -31,7 +31,7 @@
 ```powershell
 npm ci
 npm start              # запуск из исходников
-npm test               # 114 unit/property-тестов (node:test + fast-check)
+npm test               # 118 unit- и property-тестов (node:test + fast-check)
 npm run test:e2e       # e2e в настоящем Electron
 npm run dist           # portable + NSIS-установщик в dist\
 ```

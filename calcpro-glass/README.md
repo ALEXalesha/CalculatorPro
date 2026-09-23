@@ -4,7 +4,7 @@
 
 **A calculator in the Apple Liquid Glass style with three modes: standard, scientific, and stacked fractions. The parser uses no `eval`, and the engine is checked with fast-check properties.**
 
-[Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md)
+[Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md) &nbsp;·&nbsp; [All three calculators](../README.md)
 
 [![CI](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml/badge.svg)](https://github.com/ALEXalesha/CalculatorPro/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/ALEXalesha/CalculatorPro?color=16a34a)](https://github.com/ALEXalesha/CalculatorPro/releases/latest)
@@ -30,7 +30,7 @@ History (50 entries) and memory are kept in localStorage.
 
 ```powershell
 npm ci
-npm test            # 114 unit and property tests (node:test + fast-check)
+npm test            # 118 unit and property tests (node:test + fast-check)
 npm run test:e2e    # the real page in Electron: clicks, checks, no console errors
 ```
 

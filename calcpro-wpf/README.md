@@ -1,79 +1,74 @@
 # Calc Pro (WPF)
 
-Windows-калькулятор в стиле Apple Liquid Glass. C# 12 + WPF на .NET 8, MVVM.
+[Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md) &nbsp;·&nbsp; [All three calculators](../README.md)
 
-## Что внутри
+<img src="docs/screenshots/standard.png" width="49%" alt="Calc Pro: standard mode"> <img src="docs/screenshots/scientific.png" width="49%" alt="Calc Pro: scientific mode">
 
-- **Своё ядро вычислений.** Tokenizer → Pratt-парсер → AST → Evaluator. Никакого
-  `eval` и `DataTable.Compute`.
-- **Точные вычисления.** `decimal` везде, округление до 12 знаков (`MidpointRounding.ToEven`).
-  `0.1 + 0.2 == 0.3` буквально. В `double` уходят только `sin/cos/log/exp`.
-- **Command Pattern для undo/redo.** Каждое нажатие — объект `ICalcCommand` с `Execute`/`Undo`.
-- **Явный автомат состояний** `CalcPhase` с проверяемыми инвариантами (см. ниже).
-- **MVVM.** View только привязывается к ViewModel; в code-behind лишь анимации.
+A Windows calculator in the Apple Liquid Glass style. C# 12 and WPF on .NET 8, MVVM.
 
-## Запуск и сборка
+## Inside
+
+- **Its own expression engine.** Tokenizer → Pratt parser → AST → evaluator. No `eval`, no `DataTable.Compute`.
+- **Exact arithmetic.** `decimal` everywhere, rounded to 12 places (`MidpointRounding.ToEven`); `0.1 + 0.2 == 0.3` literally. Only `sin/cos/log/exp` go through `double`.
+- **Undo/redo through the Command pattern.** Every key press is an `ICalcCommand` with `Execute` and `Undo`.
+- **An explicit input state machine** (`CalcPhase`) with invariants the tests check after every press.
+- **MVVM.** The view only binds to the view model; the code-behind has nothing but animations.
+
+The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, so its tests run on Linux in CI.
+
+## Running and building
 
 ```powershell
 dotnet run --project src\CalcPro.Wpf
-dotnet test CalcPro.sln
-..\build.ps1 -Only wpf        # portable .exe + установщик в ..\dist
+dotnet test CalcPro.sln                  # 298 tests
+..\build.ps1 -Only wpf                   # portable .exe and installer into ..\dist
+dotnet run --project tools\CalcPro.Screenshots   # the README frames
 ```
 
-Portable — self-contained single-file (~50 МБ со сжатием), .NET на целевой машине не нужен.
-Установщик — Inno Setup (`installer\CalcPro.iss`); по умолчанию ставится для текущего
-пользователя, без прав администратора.
+The portable build is a self-contained single file (about 50 MB compressed); no .NET is needed on the target machine. The installer is Inno Setup (`installer\CalcPro.iss`) and installs for the current user without administrator rights.
 
-## Структура
+## Grammar
 
-```
-CalcPro.sln
-├── src/CalcPro.Core/          движок, без WPF (net8.0)
-│   ├── Models/                CalcState, CalcPhase, CalcMode, AngleMode, HistoryEntry
-│   ├── Services/              Tokenizer, Parser, Ast, Evaluator, DisplayFormat, HistoryManager
-│   └── Commands/              Digit, Operator (+ постфиксный %), Paren, Equals, Clear/ClearEntry,
-│                              Backspace, Sign, Function, Constant, EnterValue, Memory
-├── src/CalcPro.Wpf/           App, MainWindow, CalcViewModel, стили, иконка
-├── tests/CalcPro.Tests/       xUnit + FsCheck (293 теста)
-└── installer/CalcPro.iss
-```
-
-## Грамматика
-
-| Токен | Приоритет | Замечания |
+| Token | Precedence | Notes |
 |---|---|---|
-| `+` `-` | 70 | левая ассоциативность |
-| `*` `/` | 80 | левая ассоциативность |
-| унарный `-` `+` | 90 | префикс |
-| `^` | 100 | **правая** ассоциативность: `2^3^2 = 512` |
-| `!` `%` | 110 | постфикс: `2^3! = 64`, `-3! = -6`, `50% = 0.5` |
-| `(` | 120 | группировка, вызов функции |
+| `+` `-` | 70 | left-associative |
+| `*` `/` | 80 | left-associative |
+| unary `-` `+` | 90 | prefix |
+| `^` | 100 | **right**-associative: `2^3^2 = 512` |
+| `!` `%` | 110 | postfix: `2^3! = 64`, `-3! = -6`, `50% = 0.5` |
+| `(` | 120 | grouping, function call |
 
-Функции: `sin cos tan asin acos atan log ln exp sqrt abs sqr inv`; константы `pi`, `e`.
-Ограничения: вложенность ≤ 256, длина ≤ 1000 токенов.
+Functions: `sin cos tan asin acos atan log ln exp sqrt abs sqr inv`; constants `pi`, `e`. Limits: nesting ≤ 256, length ≤ 1000 tokens.
 
-## Автомат ввода
+## Input state machine
 
-| Фаза | Выражение заканчивается на | Следующая цифра |
+| Phase | Expression ends with | Next digit |
 |---|---|---|
-| `Idle` | (пусто) | начинает число |
-| `EnteringDigit` | оператор, `(` или пусто | дописывается |
-| `AfterOperator` | оператор или `(` | начинает число |
-| `AfterValue` | `)` или `%` | неявное умножение: `(2+3) 4` = 20 |
-| `AfterEquals` | `" ="` | новое выражение |
+| `Idle` | (empty) | starts a number |
+| `EnteringDigit` | operator, `(` or empty | is appended |
+| `AfterOperator` | operator or `(` | starts a number |
+| `AfterValue` | `)` or `%` | implicit multiplication: `(2+3) 4` = 20 |
+| `AfterEquals` | `" ="` | new expression |
 
-`=` отбрасывает висящий оператор и закрывает незакрытые скобки. Функция после `)`
-применяется к группе: `(9 + 7) √` → `sqrt(9 + 7)`.
+`=` drops a dangling operator and closes open brackets. A function after `)` applies to the group: `(9 + 7) √` → `sqrt(9 + 7)`.
 
-## Хоткеи
+## Tests
 
-| Клавиша | Действие |
+xUnit and FsCheck. A random expression tree printed with minimal brackets parses back into the same tree, which pins the whole precedence table at once. The evaluator is checked against algebraic laws (commutativity, distributivity, `sin² + cos² = 1`, `ln(exp x) = x` and more), and any random tree, including numbers at the edge of `decimal`, may only end in a `CalcEvalException`: that is what caught the overflows that used to crash the app. 3000 random sequences of 40 key presses check the state machine after every press, and undoing all of them must return the initial state. Details in [../docs/TESTING.md](../docs/TESTING.md).
+
+## Screenshots are generated
+
+`tools/CalcPro.Screenshots` creates the real `App` resources and `MainWindow` far off screen, presses keys through the same view-model commands the buttons are bound to, and renders the window's client area with `RenderTargetBitmap`. The first frames found two bugs in the window: the expression line and the history showed `*` and `/` while the buttons say `×` and `÷`, and the memory badge stretched to the full height of its row. The engine keeps ASCII operators; `DisplayFormat.Pretty` swaps them for the screen, and an FsCheck property makes sure the pretty text tokenizes exactly like the original.
+
+## Keyboard
+
+| Key | Action |
 |---|---|
-| `0`–`9`, `.`, `,` | цифры |
-| `+` `-` `*` `/` | операции |
-| `Enter` | вычислить |
-| `Backspace` / `Delete` / `Esc` | стереть символ / C / AC |
+| `0`–`9`, `.`, `,` | digits |
+| `+` `-` `*` `/` | operators |
+| `Enter` | evaluate |
+| `Backspace` / `Delete` / `Esc` | delete a character / C / AC |
 | `Ctrl+Z` / `Ctrl+Y` | undo / redo |
-| `Ctrl+C` / `Ctrl+V` | копировать результат / вставить число |
-| `Ctrl+H` | панель истории |
-| `Ctrl+M` | Memory Recall |
+| `Ctrl+C` / `Ctrl+V` | copy the result / paste a number |
+| `Ctrl+H` | history panel |
+| `Ctrl+M` | memory recall |
