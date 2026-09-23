@@ -58,6 +58,30 @@ public class TokenizerAndFormatPropertyTests
         Prop.ForAll(Arb.From(Gens.SignedDecimal), v =>
             Evaluator.Evaluate("1*" + DisplayFormat.Operand(v)) == v);
 
+    // Строка выражения и история показывали "*" и "/", хотя на кнопках × и ÷:
+    // нашлось на кадре для README. Pretty - только для экрана, но текст после него
+    // должен читаться движком так же, как до.
+    [Property(MaxTest = 2000)]
+    public Property Pretty_TokenizesExactlyLikeTheOriginal() =>
+        Prop.ForAll(Arb.From(Gens.Ast(3)), ast =>
+        {
+            var text = ExpressionPrinter.Full(ast);
+            Func<List<Token>, string> all = ts => string.Join(",", ts.Select(t => $"{t.Kind}:{t.Text}:{t.Number}@{t.Position}"));
+            var pretty = DisplayFormat.Pretty(text);
+            return (all(Tokenizer.Tokenize(pretty)) == all(Tokenizer.Tokenize(text)))
+                .Label($"{text} -> {pretty}")
+                .And(!pretty.Any(c => c is '*' or '/' or '-'))
+                .And(pretty.Length == text.Length);
+        });
+
+    [Theory]
+    [InlineData("12 * 3 / (-4)", "12 × 3 ÷ (−4)")]
+    [InlineData("(2 + 3) * 4", "(2 + 3) × 4")]
+    [InlineData("0.1 + 0.2", "0.1 + 0.2")]
+    [InlineData("", "")]
+    public void Pretty_UsesTheButtonSymbols(string text, string expected) =>
+        Assert.Equal(expected, DisplayFormat.Pretty(text));
+
     [Theory]
     [InlineData("3.14", 3.14)]
     [InlineData("-0.5", -0.5)]

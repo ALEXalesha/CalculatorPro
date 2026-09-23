@@ -76,7 +76,8 @@ public static class Tokenizer
             switch (c)
             {
                 case '+': tokens.Add(new Token(TokenKind.Plus, "+", 0m, i)); i++; break;
-                case '-': tokens.Add(new Token(TokenKind.Minus, "-", 0m, i)); i++; break;
+                case '-':
+                case '−': tokens.Add(new Token(TokenKind.Minus, "-", 0m, i)); i++; break;
                 case '*':
                 case '×': tokens.Add(new Token(TokenKind.Star, "*", 0m, i)); i++; break;
                 case '/':
