@@ -11,7 +11,9 @@
 
   :root {
     --cell: 56px;
+    --cell-w: 56px;
     --sci-cell: 38px;
+    --sci-cell-w: 38px;
     --result-fz: 56px;
     --expr-fz: 22px;
     --gap: 10px;
@@ -171,7 +173,7 @@
 
   .scientific-pad {
     display: none;
-    grid-template-columns: repeat(5, var(--sci-cell));
+    grid-template-columns: repeat(5, var(--sci-cell-w));
     grid-auto-rows: var(--sci-cell);
     gap: var(--sci-gap);
     justify-content: center;
@@ -183,7 +185,7 @@
 
   .keypad {
     display: grid;
-    grid-template-columns: repeat(4, var(--cell));
+    grid-template-columns: repeat(4, var(--cell-w));
     grid-auto-rows: var(--cell);
     gap: var(--gap);
     justify-content: center;
@@ -193,8 +195,8 @@
 
   .btn {
     width: 100%; height: 100%;
-    aspect-ratio: 1;
-    border-radius: 50%;
+    /* круг, если ячейка квадратная, и капсула, если шире (app.js, fit) */
+    border-radius: 999px;
     border: 0.5px solid rgb(var(--ink) / 0.18);
     font-size: calc(var(--cell) * 0.42);
     font-weight: 400;

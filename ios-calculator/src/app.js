@@ -19,7 +19,10 @@
   });
 
   // ====== ADAPTIVE BUTTON SIZE ======
-  // Buttons must stay round: cell = min(width-based, height-based) size.
+  // Columns always take the full width. The row height is min(width-based,
+  // height-based): when the height is enough, keys are round; when it is not
+  // (scientific mode in the default 320x640 window), they stretch into capsules,
+  // as on the iPhone in landscape, instead of leaving empty bands at the sides.
   const calcEl = $('calc');
   const MIN_DISPLAY_BASIC = 140;
   const MIN_DISPLAY_SCI = 110;
@@ -47,8 +50,11 @@
       ? Math.floor((remainingH - 76) / 9)
       : Math.floor((remainingH - 40) / 5);
 
-    const cell = Math.max(34, Math.min(cellByWidth, cellByHeight));
-    const sciCell = sciCellFromCell(cell);
+    const cellW = Math.max(34, cellByWidth);
+    const cell = Math.min(cellW, Math.max(34, cellByHeight));
+    // Without floor: five columns rounded down came out 4px narrower than the keypad.
+    const sciCellW = (4 * cellW + 3 * gap - 4 * sciGap) / 5;
+    const sciCell = Math.min(sciCellW, sciCellFromCell(cell));
 
     const sciH = isSci ? 5 * sciCell + 4 * sciGap + 6 : 0;
     const keypadH = 5 * cell + 4 * gap;
@@ -61,7 +67,9 @@
 
     const root = document.documentElement.style;
     root.setProperty('--cell', cell + 'px');
+    root.setProperty('--cell-w', cellW + 'px');
     root.setProperty('--sci-cell', sciCell + 'px');
+    root.setProperty('--sci-cell-w', sciCellW + 'px');
     root.setProperty('--result-fz', resultFz + 'px');
     root.setProperty('--expr-fz', exprFz + 'px');
     root.setProperty('--min-display', MIN_DISPLAY + 'px');

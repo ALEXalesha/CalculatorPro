@@ -78,6 +78,27 @@ app.whenReady().then(async () => {
   fs.writeFileSync(out, (await win.webContents.capturePage()).toPNG());
   console.log('screenshot:', out);
 
+  // Окно по умолчанию (main.js, 320x640): клавиши на всю ширину и в научном режиме.
+  // Раньше круглые клавиши там сжимались по высоте до 39 px и оставляли по бокам
+  // пустые полосы по 65 px; теперь они вытягиваются в капсулы.
+  win.setSize(320, 640);
+  await new Promise(r => setTimeout(r, 400));
+  const span = sel => js(`(() => {
+    const r = [...document.querySelectorAll(${JSON.stringify(sel)})].map(b => b.getBoundingClientRect());
+    const w = r.map(x => x.width), h = r.map(x => x.height);
+    return { left: Math.round(Math.min(...r.map(x => x.left))), right: Math.round(innerWidth - Math.max(...r.map(x => x.right))),
+             wide: Math.min(...w) >= Math.max(...h) };
+  })()`);
+  const keypad = await span('.keypad .btn');
+  const sciPad = await span('.scientific-pad .btn');
+  check('scientific 320x640: keypad margins at most 24px', Math.max(keypad.left, keypad.right) <= 24, true);
+  check('scientific 320x640: sci pad spans the keypad', Math.abs(sciPad.left - keypad.left) + Math.abs(sciPad.right - keypad.right) <= 2, true);
+  check('scientific 320x640: keys are capsules, not ovals on end', keypad.wide && sciPad.wide, true);
+  await click('#sciToggle');
+  await new Promise(r => setTimeout(r, 400));
+  check('basic 320x640: keys stay round', await js(`(() => { const r = document.querySelector('.keypad .btn').getBoundingClientRect(); return Math.round(r.width) === Math.round(r.height); })()`), true);
+  check('basic 320x640: keypad margins at most 24px', Math.max(...Object.values(await span('.keypad .btn')).slice(0, 2)) <= 24, true);
+
   // Темы Paint Pro в меню «•••»: смена цветов и память о выборе.
   const css = v => js(`getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(v)}).trim()`);
   check('glass theme by default', await js('document.documentElement.getAttribute("data-theme")'), null);
