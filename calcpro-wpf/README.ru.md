@@ -15,6 +15,12 @@ Windows-калькулятор в стиле Apple Liquid Glass. C# 12 + WPF н�
 - **Command Pattern для undo/redo.** Каждое нажатие — объект `ICalcCommand` с `Execute`/`Undo`.
 - **Явный автомат состояний** `CalcPhase` с проверяемыми инвариантами (см. ниже).
 - **MVVM.** View только привязывается к ViewModel; в code-behind лишь анимации и меню тем.
+- **Режим «Программист»** (меню режимов: Standard, Scientific, Programmer). Целые 64 бита
+  со знаком: HEX, DEC, OCT, BIN одновременно, `+ − × ÷ Mod`, `AND OR XOR NOT`, `<< >>`,
+  скобки; клавиши A-F с клавиатуры. Ядро `ProgrammerCalculator` и его 52 примера общие с
+  Calc Pro Glass (`test-vectors/programmer.json`).
+
+<img src="docs/screenshots/programmer.png" width="60%" alt="Calc Pro: режим «Программист»">
 
 ## Запуск и сборка
 
@@ -38,7 +44,7 @@ CalcPro.sln
 │   └── Commands/              Digit, Operator (+ постфиксный %), Paren, Equals, Clear/ClearEntry,
 │                              Backspace, Sign, Function, Constant, EnterValue, Memory
 ├── src/CalcPro.Wpf/           App, MainWindow, CalcViewModel, стили, иконка
-├── tests/CalcPro.Tests/       xUnit + FsCheck (342 теста)
+├── tests/CalcPro.Tests/       xUnit + FsCheck (409 тестов)
 └── installer/CalcPro.iss
 ```
 

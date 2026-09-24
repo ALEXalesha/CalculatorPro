@@ -30,7 +30,7 @@
 ```powershell
 npm ci
 npm start              # запуск (F12 — DevTools, только из исходников)
-npm test               # 78 unit- и property-тестов
+npm test               # 79 unit- и property-тестов
 npm run test:e2e       # e2e в настоящем Electron
 ..\build.ps1 -Only ios     # portable + NSIS-установщик в ..\dist
 ```

@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 571 тест, большая часть — свойства на случайных входах.**
+**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 701 тест, большая часть — свойства на случайных входах.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
 
@@ -17,7 +17,7 @@
 | Папка | Приложение | Стек | Что умеет |
 |---|---|---|---|
 | [`calcpro-wpf/`](calcpro-wpf/README.ru.md) | **Calc Pro** | C# 12, WPF, .NET 8 | Выражения с приоритетами на `decimal` (0.1 + 0.2 = 0.3 точно), скобки, научные функции, память, история, undo/redo |
-| [`calcpro-glass/`](calcpro-glass/README.ru.md) | **Calc Pro Glass** | Electron, HTML/CSS/JS | Режимы Standard / Scientific / Fraction (ввод дробей «в столбик»), DEG/RAD/GRAD, 2nd, память, история |
+| [`calcpro-glass/`](calcpro-glass/README.ru.md) | **Calc Pro Glass** | Electron, HTML/CSS/JS | Режимы Standard / Scientific / Fraction (ввод дробей «в столбик») / Programmer (HEX, DEC, OCT, BIN), DEG/RAD/GRAD, 2nd, память, история |
 | [`ios-calculator/`](ios-calculator/README.ru.md) | **Calculator iOS 26** | Electron, HTML/CSS/JS | Копия калькулятора iPhone: пошаговое вычисление, научная панель, история |
 
 <img src="calcpro-wpf/docs/screenshots/standard.png" width="760" alt="Calc Pro">
@@ -57,9 +57,9 @@ Calc Pro теперь рисует свой заголовок в цветах �
 Результат в `dist/`:
 
 ```
-CalcPro-1.5.0-Portable.exe          CalcPro-1.5.0-Setup.exe
-CalcProGlass-1.5.0-Portable.exe     CalcProGlass-1.5.0-Setup.exe
-CalculatorIOS26-1.5.0-Portable.exe  CalculatorIOS26-1.5.0-Setup.exe
+CalcPro-1.6.0-Portable.exe          CalcPro-1.6.0-Setup.exe
+CalcProGlass-1.6.0-Portable.exe     CalcProGlass-1.6.0-Setup.exe
+CalculatorIOS26-1.6.0-Portable.exe  CalculatorIOS26-1.6.0-Setup.exe
 ```
 
 Запуск из исходников:
@@ -73,9 +73,9 @@ cd ios-calculator; npm ci; npm start
 ## Тесты
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 342 теста (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 151 unit + e2e в Electron
-cd ios-calculator; npm test; npm run test:e2e # 78 unit + e2e в Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 409 тестов (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 213 unit + e2e в Electron
+cd ios-calculator; npm test; npm run test:e2e # 79 unit + e2e в Electron
 ```
 
 Основа — property-based тесты: генератор выдаёт тысячи случайных выражений и

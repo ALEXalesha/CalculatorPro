@@ -10,7 +10,7 @@
 [![Release](https://img.shields.io/github/v/release/ALEXalesha/CalculatorPro?color=16a34a)](https://github.com/ALEXalesha/CalculatorPro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-<img src="docs/screenshots/modes.png" width="900" alt="Three modes: Standard, Scientific and Fraction">
+<img src="docs/screenshots/modes.png" width="900" alt="Four modes: Standard, Scientific, Fraction and Programmer">
 
 </div>
 
@@ -19,6 +19,7 @@
 - **Standard**: expressions with operator precedence, and percent the way Apple and Windows calculators do it: `100 + 10 %` = 110, `100 × 10 %` = 10.
 - **Scientific**: trigonometry with inverse and hyperbolic functions, `ln log eˣ 10ˣ`, roots `√ ³√ ʸ√x`, powers, `n!`, `1/x`, `|x|`, `π e`, `EE`, DEG/RAD/GRAD, 2nd, memory.
 - **Fraction**: fractions typed "in a column" with a cursor (`a/b`, arrows, `Mix`, `Simp`), result as a fraction or a decimal (`D⇄F`).
+- **Programmer**: 64-bit signed integers typed in HEX, DEC, OCT or BIN and shown in all four at once; `+ − × ÷ Mod`, `AND OR XOR NOT`, `<< >>`, brackets. The same logic and the same 52 shared examples as Calc Pro. Keyboard: `0-9 a-f`, `& | ^ ~ < >`, `%` for Mod.
 
 History (50 entries) and memory are kept in localStorage.
 
@@ -44,7 +45,7 @@ The window opens where and how large it was closed (`window-state.json` in the a
 
 ```powershell
 npm ci
-npm test            # 151 unit and property tests (node:test + fast-check)
+npm test            # 213 unit and property tests (node:test + fast-check)
 npm run test:e2e    # the real page in Electron: clicks, checks, no console errors
 ```
 

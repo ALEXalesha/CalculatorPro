@@ -2,7 +2,7 @@
 
 # Calc Pro Glass
 
-**Калькулятор в стиле Apple Liquid Glass с тремя режимами: обычный, инженерный и дроби «в столбик». Парсер без `eval`, движок проверен свойствами на fast-check.**
+**Калькулятор в стиле Apple Liquid Glass с четырьмя режимами: обычный, инженерный, дроби «в столбик» и «Программист». Парсер без `eval`, движок проверен свойствами на fast-check.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md) &nbsp;·&nbsp; [Все три калькулятора](../README.ru.md)
 
@@ -10,12 +10,12 @@
 [![Release](https://img.shields.io/github/v/release/ALEXalesha/CalculatorPro?color=16a34a)](https://github.com/ALEXalesha/CalculatorPro/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-<img src="docs/screenshots/modes.png" width="900" alt="Три режима: Standard, Scientific и Fraction">
+<img src="docs/screenshots/modes.png" width="900" alt="Четыре режима: Standard, Scientific, Fraction и Programmer">
 
 </div>
 
 Калькулятор в стиле Apple Liquid Glass: скруглённое прозрачное окно без рамки,
-градиентная подложка, стеклянные круглые кнопки. Три режима:
+градиентная подложка, стеклянные круглые кнопки. Четыре режима:
 
 - **Standard** — выражения с приоритетами, процент в стиле Apple/Windows
   (`100 + 10 %` = 110, `100 × 10 %` = 10).
@@ -23,6 +23,10 @@
   корни `√ ³√ ʸ√x`, `x² x³ xʸ`, `n!`, `1/x`, `|x|`, `π e`, `EE`, DEG/RAD/GRAD, 2nd, память.
 - **Fraction** — ввод дробей «в столбик» с курсором (`a/b`, стрелки, `Mix`, `Simp`),
   результат дробью или десятичной (`D⇄F`).
+- **Programmer** — целые 64 бита со знаком: число набирается в HEX, DEC, OCT или BIN и
+  видно во всех четырёх сразу; `+ − × ÷ Mod`, `AND OR XOR NOT`, `<< >>`, скобки. Та же
+  логика и те же 52 общих примера, что у Calc Pro. С клавиатуры: `0-9 a-f`, `& | ^ ~ < >`,
+  `%` - Mod.
 
 История (50 записей) и память хранятся в localStorage.
 
@@ -31,7 +35,7 @@
 ```powershell
 npm ci
 npm start              # запуск из исходников
-npm test               # 151 unit- и property-тест (node:test + fast-check)
+npm test               # 213 unit- и property-тестов (node:test + fast-check)
 npm run test:e2e       # e2e в настоящем Electron
 npm run dist           # portable + NSIS-установщик в dist\
 ```
