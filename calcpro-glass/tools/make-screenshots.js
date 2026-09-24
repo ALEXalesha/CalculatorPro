@@ -86,6 +86,9 @@ app.whenReady().then(async () => {
   // меню, но без записи: хранилище у этой сессии своё и в памяти, да и писать нечего.
   await click('#tabStandard');
   await keys(['AC', '1', '2', '3', '4', '×', '5', '6', '=']);
+  // Переходы цветов выключаются: смена темы плавная (0.2-0.3 с), и кадр, снятый
+  // сразу, ловил середину перехода - в «Светлой» цифры выходили серыми.
+  await js(`document.head.appendChild(Object.assign(document.createElement('style'), { textContent: '*, *::before, *::after { transition: none !important; animation: none !important; }' }))`);
   const themed = [];
   for (const id of ['glass', 'formal', 'light', 'night', 'warm']) {
     await js(`CalcTheme.apply(document.documentElement, ${JSON.stringify(id)}, null)`);
