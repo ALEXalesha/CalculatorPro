@@ -1,6 +1,6 @@
 {
   "name": "calcpro-glass",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Calc Pro Glass — liquid glass calculator with Standard, Scientific and Fraction modes",
   "author": "ALEXalesha",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "window-state.js",
       "src/**/*",
       "build/icon.ico"
     ],

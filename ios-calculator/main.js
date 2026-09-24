@@ -1,15 +1,26 @@
-const { app, BrowserWindow, Menu, ipcMain } = require('electron');
+const { app, BrowserWindow, screen, Menu, ipcMain } = require('electron');
 const path = require('path');
+const WindowState = require('./window-state');
 
 let mainWindow = null;
 
+// Размер и место окна между запусками: %APPDATA%\<приложение>\window-state.json.
+const SIZE = { width: 320, height: 640, minWidth: 280, minHeight: 500 };
+const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
+
 function createWindow() {
+  // Основной экран первым: на нём окно встанет по центру, если сохранённое место не видно.
+  const primary = screen.getPrimaryDisplay();
+  const areas = [primary, ...screen.getAllDisplays().filter((d) => d.id !== primary.id)].map((d) => d.workArea);
+  const placed = WindowState.restore(WindowState.load(stateFile()), areas, SIZE);
+
   mainWindow = new BrowserWindow({
-    width: 320,
-    height: 640,
+    ...(placed.x !== undefined ? { x: placed.x, y: placed.y } : {}),
+    width: placed.width,
+    height: placed.height,
     // Минимум как у калькулятора Windows (320x500), по ширине чуть меньше.
-    minWidth: 280,
-    minHeight: 500,
+    minWidth: SIZE.minWidth,
+    minHeight: SIZE.minHeight,
     frame: false,
     transparent: true,
     hasShadow: true,
@@ -31,7 +42,14 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'src', 'index.html'));
+  if (placed.maximized) mainWindow.maximize();
   mainWindow.once('ready-to-show', () => mainWindow.show());
+
+  // Запись после каждого перемещения и изменения размера (события приходят один раз в
+  // конце перетаскивания) и при закрытии: если процесс убьют, размер не потеряется.
+  const remember = () => { if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isMinimized()) WindowState.save(stateFile(), WindowState.capture(mainWindow)); };
+  for (const event of ['resized', 'moved', 'maximize', 'unmaximize']) mainWindow.on(event, remember);
+  mainWindow.on('close', () => { if (mainWindow) WindowState.save(stateFile(), WindowState.capture(mainWindow)); });
 
   // F12 / Ctrl+Shift+I — DevTools, only when running from sources (npm start).
   if (!app.isPackaged) {
