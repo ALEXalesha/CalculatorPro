@@ -32,6 +32,10 @@ The five themes of Paint Pro, with its colours: pick one from the palette button
 
 The window shrinks to 280×500, below the 320×500 of the calculator built into Windows. In a low window the display and the gaps get smaller, so the twelve rows of the scientific mode stay at 23 px instead of 18; a long example in the history wraps after its operators instead of ending in `…`. The end-to-end run resizes the window to 280×500 and checks every key of every mode.
 
+## The window remembers itself
+
+The window opens where and how large it was closed (`window-state.json` in the app's data folder). `window-state.js` holds the rule and is the same file in Calculator iOS 26: a window on an unplugged monitor is centred, one larger than the screen is cut to it, the title bar always stays on a screen.
+
 ## The engine
 
 `src/calc-core.js` has no DOM and is shared by the page and the Node tests. The parser is shunting-yard with no `eval`. The grammar: `+ -` < `* /` < unary minus < `^` (right-associative), so `-2^2` is -4 and `2^-2` is 0.25. Implicit multiplication works: `2(3)`, `(1)(2)`, `2π`, `2sin(30)`. Unclosed brackets close on `=`.
@@ -40,7 +44,7 @@ The window shrinks to 280×500, below the 320×500 of the calculator built into 
 
 ```powershell
 npm ci
-npm test            # 131 unit and property tests (node:test + fast-check)
+npm test            # 151 unit and property tests (node:test + fast-check)
 npm run test:e2e    # the real page in Electron: clicks, checks, no console errors
 ```
 

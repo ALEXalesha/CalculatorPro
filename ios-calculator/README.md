@@ -28,7 +28,7 @@ The five themes of Paint Pro under «Тема» in the `•••` menu; the cho
 ```powershell
 npm ci
 npm start              # F12 opens DevTools, only when run from sources
-npm test               # 58 unit and property tests
+npm test               # 78 unit and property tests
 npm run test:e2e       # the real page in Electron
 npx electron tools/make-screenshots.js   # the README frames
 ..\build.ps1 -Only ios # portable exe and NSIS installer into ..\dist
@@ -37,7 +37,8 @@ npx electron tools/make-screenshots.js   # the README frames
 ## Layout
 
 ```
-main.js             320×640 window (minimum 280×500), frameless, transparent; IPC for minimise/close
+main.js             320×640 window (minimum 280×500), frameless, transparent; IPC for minimise/close;
+                    opens where it was closed (window-state.js, the same file as in Calc Pro Glass)
 preload.js          contextBridge → window.windowAPI
 src/index.html      markup and CSS
 src/calc-engine.js  engine without DOM (UMD)
