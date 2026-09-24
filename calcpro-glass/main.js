@@ -7,8 +7,9 @@ function createWindow() {
   win = new BrowserWindow({
     width: 320,
     height: 640,
-    minWidth: 320,
-    minHeight: 640,
+    // Минимум как у калькулятора Windows (320x500), по ширине чуть меньше.
+    minWidth: 280,
+    minHeight: 500,
     frame: false,
     transparent: true,
     hasShadow: true,

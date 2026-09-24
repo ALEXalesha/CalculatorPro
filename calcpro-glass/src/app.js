@@ -229,7 +229,8 @@
       el.className = 'history-item';
       el.dataset.idx = i;
       el.innerHTML = '<div class="history-item-expr"></div><div class="history-item-result"></div>';
-      el.querySelector('.history-item-expr').textContent = item.expr;
+      // Невидимый разрыв (U+200B) после знаков: длинный пример переносится по ним.
+      el.querySelector('.history-item-expr').textContent = item.expr.replace(/([+\-−×÷^])/g, '$1\u200B');
       const numResult = typeof item.result === 'number' ? item.result : parseFloat(item.result);
       el.querySelector('.history-item-result').textContent =
         '= ' + (isFinite(numResult) ? formatNumber(numResult) : String(item.result));
