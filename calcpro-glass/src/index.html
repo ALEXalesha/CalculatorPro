@@ -217,6 +217,12 @@ body {
   font-family: inherit;
 }
 
+.mode-tab .short { display: none; }
+@media (max-width: 420px) {
+  .mode-tab .full { display: none; }
+  .mode-tab .short { display: inline; }
+}
+
 .mode-tab.active {
   background: var(--accent-grad);
   color: var(--on-accent);
@@ -735,6 +741,68 @@ body {
   font-style: italic;
 }
 
+/* ===== «Программист» (1.6.0) ===== */
+.calc-keys.programmer {
+  grid-template-columns: repeat(5, 1fr);
+  gap: clamp(3px, 0.9vh, 7px);
+  padding: clamp(4px, 1vh, 8px) 14px 16px;
+}
+.calc-keys.programmer .btn { font-size: clamp(12px, 2.3vh, 20px); }
+.calc-keys.programmer .btn-sci { font-size: clamp(11px, 2vh, 16px); }
+.calc-keys .span-2 { grid-column: span 2; }
+/* Цифры, которых в выбранной системе нет, видны, но нажать их нельзя. */
+.btn:disabled {
+  opacity: 0.32;
+  cursor: default;
+  filter: none;
+  transform: none;
+}
+.base-rows {
+  position: relative; z-index: 2;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 14px 4px;
+  flex-shrink: 0;
+}
+.base-rows.visible { display: flex; }
+.base-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 3px 10px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.base-row:hover { background: var(--glass-bg-soft); }
+.base-row.active {
+  background: var(--glass-bg);
+  border-color: rgb(var(--accent-rgb) / 0.8);
+}
+.base-row .base-name {
+  flex: 0 0 34px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+/* Число прижато вправо; 64 двоичных разряда не влезают - шрифт ужимает app.js. */
+.base-row .base-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
 /* ===== Memory row (scientific only) ===== */
 .mem-row {
   position: relative; z-index: 2;
@@ -796,6 +864,8 @@ body {
   .fraction-line { min-height: 16px; font-size: 14px; }
   .main-result { font-size: clamp(28px, 7vh, 64px); }
   .calc-keys.scientific { padding: 2px 14px 14px; gap: 3px; }
+  .calc-keys.programmer { padding: 2px 14px 14px; gap: 3px; }
+  .base-row { padding: 1px 10px; }
 }
 /* Узкое окно: подписи вкладок без разрядки, иначе STANDARD вылезал за вкладку. */
 @media (max-width: 300px) {
@@ -841,9 +911,11 @@ body {
 <!-- Mode tabs -->
 <div class="mode-tabs-wrap">
   <div class="mode-tabs">
-    <button class="mode-tab active" id="tabStandard" data-mode="standard">Standard</button>
-    <button class="mode-tab" id="tabScientific" data-mode="scientific">Scientific</button>
-    <button class="mode-tab" id="tabFraction" data-mode="fraction">Fraction</button>
+    <!-- Две подписи: полная и короткая. Четыре полных в узком окне не помещаются. -->
+    <button class="mode-tab active" id="tabStandard" data-mode="standard" title="Standard"><span class="full">Standard</span><span class="short">Std</span></button>
+    <button class="mode-tab" id="tabScientific" data-mode="scientific" title="Scientific"><span class="full">Scientific</span><span class="short">Sci</span></button>
+    <button class="mode-tab" id="tabFraction" data-mode="fraction" title="Fraction"><span class="full">Fraction</span><span class="short">Frac</span></button>
+    <button class="mode-tab" id="tabProgrammer" data-mode="programmer" title="Programmer: HEX, DEC, OCT, BIN и битовые операции"><span class="full">Programmer</span><span class="short">Prog</span></button>
   </div>
   <button class="angle-pill" id="anglePill" title="Toggle Rad/Deg">DEG</button>
 </div>
@@ -863,6 +935,9 @@ body {
   <div class="main-result" id="mainResult">0</div>
   <div class="fraction-line" id="fractionLine"></div>
 </div>
+
+<!-- «Программист»: число во всех четырёх системах; щелчок - вводить в этой -->
+<div class="base-rows" id="baseRows"></div>
 
 <!-- Keys -->
 <div class="calc-keys" id="calcKeys"></div>
@@ -886,6 +961,7 @@ body {
 </div><!-- /.app-shell -->
 
 <script src="calc-core.js"></script>
+<script src="programmer-core.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

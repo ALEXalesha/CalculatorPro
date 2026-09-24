@@ -58,6 +58,15 @@ app.whenReady().then(async () => {
   await click('#tabFraction');
   await keys(['AC', 'a/b', '1', 'a/b', '2', '+', 'a/b', '1', 'a/b', '3', '=']);
   const fraction = await frame('fraction.png');
+  const shown = await js('document.querySelector("#mainResult").textContent.trim()');
+  console.log(`дробь в кадре: ${shown}`);
+
+  // Programmer: число во всех четырёх системах, битовые операции.
+  await click('#tabProgrammer');
+  await click('.base-row[data-base=HEX]');
+  await keys(['AC', 'F', 'F', 'AND', '3', 'C', '=', 'OR', '1', '0', '0', '=']);
+  const programmer = await frame('programmer.png');
+  await click('.base-row[data-base=DEC]');
 
   // Кадры рядом: холст с прозрачным фоном, окна с отступом.
   const scale = standard.getSize().width / W;
@@ -77,10 +86,7 @@ app.whenReady().then(async () => {
       nativeImage.createFromBitmap(canvas, { width: w, height: h, scaleFactor: scale }).toPNG());
     console.log(`  ${name}`);
   };
-  join([standard, scientific, fraction], 'modes.png');
-
-  const shown = await js('document.querySelector("#mainResult").textContent.trim()');
-  console.log(`дробь в кадре: ${shown}`);
+  join([standard, scientific, fraction, programmer], 'modes.png');
 
   // Пять тем Paint Pro на одном примере. Тема ставится тем же CalcTheme.apply, что и из
   // меню, но без записи: хранилище у этой сессии своё и в памяти, да и писать нечего.

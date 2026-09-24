@@ -6,6 +6,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Controls.Primitives;
 using CalcPro.Core.Services;
 using CalcPro.Wpf.Services;
+using CalcPro.Core.Models;
 using CalcPro.Wpf.ViewModels;
 
 namespace CalcPro.Wpf;
@@ -25,7 +26,7 @@ public partial class MainWindow : Window
         // Неявный стиль сетки (MinHeight 24) не действует на клавиши со своим стилем:
         // AC, C, ⌫, операции, «=» и научные брали MinHeight 42 у GlassButton и в низком
         // окне не влезали в ряд - ряд срезал их снизу.
-        foreach (var key in KeysGrid.Children.OfType<Button>())
+        foreach (var key in KeysGrid.Children.OfType<Button>().Concat(ProgKeysGrid.Children.OfType<Button>()))
             key.MinHeight = 24;
         RestorePlacement();
         Loaded += OnLoaded;
@@ -85,6 +86,28 @@ public partial class MainWindow : Window
                 var id = ThemeService.Apply((string)item.Tag);
                 ThemeService.Save(id);
             };
+            menu.Items.Add(item);
+        }
+        menu.IsOpen = true;
+    }
+
+    /// <summary>
+    /// Меню режимов под кнопкой режима: обычный, научный, «Программист» (1.6.0), галочка
+    /// у текущего. F1 по-прежнему переключает обычный и научный.
+    /// </summary>
+    private void OnModeButtonClick(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not CalcViewModel vm) return;
+        var menu = new ContextMenu { PlacementTarget = ModeButton, Placement = PlacementMode.Bottom };
+        foreach (var (mode, note) in new[]
+                 {
+                     (CalcMode.Standard, "Обычный калькулятор"),
+                     (CalcMode.Scientific, "Функции, степени, скобки"),
+                     (CalcMode.Programmer, "HEX, DEC, OCT, BIN и битовые операции"),
+                 })
+        {
+            var item = new MenuItem { Header = mode.ToString(), ToolTip = note, IsChecked = vm.Mode == mode };
+            item.Click += (_, _) => vm.Mode = mode;
             menu.Items.Add(item);
         }
         menu.IsOpen = true;
@@ -225,6 +248,14 @@ public partial class MainWindow : Window
             pill.MinHeight = pillHeight;
             pill.Padding = layout.Narrow ? new Thickness(2, 4, 2, 4) : new Thickness(10, 4, 10, 4);
         }
+
+        // «Программист»: в низком окне строки систем и зазоры между клавишами меньше, иначе
+        // семи рядам клавиш под четырьмя строками систем оставалось по 19 пикселей.
+        foreach (var row in BaseRows.Children.OfType<FrameworkElement>())
+            row.MinHeight = layout.Compact ? 20 : 26;
+        BaseRows.Margin = layout.Compact ? new Thickness(0, 6, 0, 4) : new Thickness(0, 10, 0, 8);
+        foreach (var key in ProgKeysGrid.Children.OfType<Button>())
+            key.Margin = new Thickness(layout.Compact ? 2 : 4);
 
         if ((DataContext as CalcViewModel)?.IsScientific == true)
         {

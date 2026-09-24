@@ -58,6 +58,14 @@ internal static class Program
         Press(vm, "AC 3 0 sin + 2 sqrt =");
         Save(window, output, "scientific.png", vm);
 
+        // Programmer: число во всех четырёх системах, битовые операции.
+        vm.Mode = CalcPro.Core.Models.CalcMode.Programmer;
+        foreach (var k in new[] { "HEX", "F", "F", "AND", "3", "C", "=", "OR", "1", "0", "0", "=" }) vm.PressProgCommand.Execute(k);
+        Save(window, output, "programmer.png", vm);
+        vm.PressProgCommand.Execute("AC");
+        vm.PressProgCommand.Execute("DEC");
+        vm.Mode = CalcPro.Core.Models.CalcMode.Scientific;
+
         // Пять тем Paint Pro на обычном режиме. Тема ставится только на экран:
         // ThemeService.Save не зовётся, файл настроек человека не трогается.
         vm.ToggleModeCommand.Execute(null);
@@ -84,7 +92,10 @@ internal static class Program
         small.Add(RenderChecked(window, "standard", problems));
         vm.ToggleModeCommand.Execute(null);
         small.Add(RenderChecked(window, "scientific", problems));
-        vm.ToggleModeCommand.Execute(null);
+        vm.Mode = CalcPro.Core.Models.CalcMode.Programmer;
+        foreach (var k in new[] { "BIN", "1", "0", "1", "1", "NOT" }) vm.PressProgCommand.Execute(k);
+        small.Add(RenderChecked(window, "programmer", problems));
+        vm.Mode = CalcPro.Core.Models.CalcMode.Standard;
         vm.ToggleHistoryCommand.Execute(null);
         small.Add(RenderChecked(window, "history", problems));
         vm.ToggleHistoryCommand.Execute(null);

@@ -21,3 +21,11 @@ public sealed class InvBoolToVisConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         value is Visibility v && v == Visibility.Collapsed;
 }
+
+/// <summary>Не: кнопки памяти выключены в режиме «Программист».</summary>
+public sealed class InvBoolConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is not true;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value is not true;
+}
