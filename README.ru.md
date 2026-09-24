@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 491 тест, большая часть — свойства на случайных входах.**
+**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 511 тестов, большая часть — свойства на случайных входах.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
 
@@ -32,6 +32,12 @@
 
 <img src="calcpro-glass/docs/screenshots/themes.png" width="900" alt="Пять тем Paint Pro в Calc Pro Glass">
 
+## Маленькое окно
+
+Все три сжимаются не хуже встроенного калькулятора Windows, у которого минимум 320×500: Calc Pro до 320×500, Calc Pro Glass и Calculator iOS 26 до 280×500. В низком окне первыми ужимаются табло и отступы, и клавиши научного режима всё равно помещаются. В узком Calc Pro история открывается вместо клавиатуры, как в калькуляторе Windows, с кнопкой «назад» в заголовке; когда окно снова широкое, она возвращается в свою колонку. Длинный результат на табло уменьшается, а не теряет цифры под «…», а длинный пример в истории переносится.
+
+<img src="calcpro-wpf/docs/screenshots/small.png" width="700" alt="Calc Pro в окне 320×500: обычный режим, научный и история на месте клавиатуры">
+
 ## Быстрый старт
 
 Нужны .NET SDK 8+, Node.js 20+ и Inno Setup 6 (для установщика Calc Pro).
@@ -45,9 +51,9 @@
 Результат в `dist/`:
 
 ```
-CalcPro-1.3.1-Portable.exe          CalcPro-1.3.1-Setup.exe
-CalcProGlass-1.3.1-Portable.exe     CalcProGlass-1.3.1-Setup.exe
-CalculatorIOS26-1.3.1-Portable.exe  CalculatorIOS26-1.3.1-Setup.exe
+CalcPro-1.4.0-Portable.exe          CalcPro-1.4.0-Setup.exe
+CalcProGlass-1.4.0-Portable.exe     CalcProGlass-1.4.0-Setup.exe
+CalculatorIOS26-1.4.0-Portable.exe  CalculatorIOS26-1.4.0-Setup.exe
 ```
 
 Запуск из исходников:
@@ -61,9 +67,9 @@ cd ios-calculator; npm ci; npm start
 ## Тесты
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 310 тестов (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 127 unit + e2e в Electron
-cd ios-calculator; npm test; npm run test:e2e # 54 unit + e2e в Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 322 теста (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 131 unit + e2e в Electron
+cd ios-calculator; npm test; npm run test:e2e # 58 unit + e2e в Electron
 ```
 
 Основа — property-based тесты: генератор выдаёт тысячи случайных выражений и
@@ -77,6 +83,8 @@ cd ios-calculator; npm test; npm run test:e2e # 54 unit + e2e в Electron
 значок памяти растягивался в высокую полоску.
 
 Проверки тем читают сами файлы тем: у всех пяти один набор ключей, текст на своих клавишах в любой теме не бледнее 4.5:1, а к цветам темы разметка обращается только через тему. Они нашли, что у клавиш AC, ± и % в двух темах контраст ниже нормы: 3.37:1 в «Стеклянной» и 2.60:1 в «Строгой». Исправлено до выпуска.
+
+Проверки маленького окна: `WindowLayoutTests` держат само правило (минимум, пороги, закрытие истории при сужении и возврат при расширении - свойством FsCheck на случайных последовательностях ширин), а программа кадров открывает настоящее окно 320×500 и падает, если видимая кнопка вышла за окно, меньше 20 px или не влезает в свою ячейку сетки, или если строка истории либо табло обрезана. Эта проверка до выпуска нашла две ошибки: у AC, C, ⌫, операций и научных клавиш свой стиль с минимальной высотой 42, и в низком окне ряды срезали их наполовину, а табло показывало `14662398875…` вместо 146623988754610578. e2e обоих Electron-калькуляторов сжимают окно до 280×500 и проверяют каждую клавишу в каждом режиме и длинный пример в истории.
 
 CI на каждый пуш гоняет тесты движков на C# и JavaScript. e2e требуют настоящего окна
 Electron и запускаются локально перед выпуском.

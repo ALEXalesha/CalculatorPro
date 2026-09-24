@@ -38,7 +38,7 @@ CalcPro.sln
 │   └── Commands/              Digit, Operator (+ постфиксный %), Paren, Equals, Clear/ClearEntry,
 │                              Backspace, Sign, Function, Constant, EnterValue, Memory
 ├── src/CalcPro.Wpf/           App, MainWindow, CalcViewModel, стили, иконка
-├── tests/CalcPro.Tests/       xUnit + FsCheck (310 тестов)
+├── tests/CalcPro.Tests/       xUnit + FsCheck (322 теста)
 └── installer/CalcPro.iss
 ```
 
@@ -47,6 +47,12 @@ CalcPro.sln
 Пять тем Paint Pro - такие же словари ресурсов (`Resources/Themes/*.xaml`) с теми же цветами. Список открывает кнопка-палитра в заголовке, окно перекрашивается сразу, выбор хранится в `%APPDATA%\CalcPro\theme.txt`. `ThemeFileTests` читает словари как XML: у всех пяти одни ключи, текст на кнопках читается в любой теме, и нигде в разметке нет `StaticResource` к ключу темы.
 
 <img src="docs/screenshots/themes.png" width="900" alt="Пять тем">
+
+## Маленькое окно
+
+Окно сжимается до 320×500 - это минимум встроенного калькулятора Windows. Правило лежит в `WindowLayout` (CalcPro.Core), `MainWindow.ApplyLayout` его выполняет: уже 720 пикселей история открывается вместо клавиатуры, с кнопкой «назад» в заголовке (открытая колонка истории при сужении закрывается, а при расширении возвращается); уже 420 название уступает место кнопкам; ниже 640 табло, шапка и отступы становятся меньше. Длинный результат на табло уменьшается в `Viewbox`, а не обрезается «…», строки истории переносятся.
+
+<img src="docs/screenshots/small.png" width="700" alt="320×500: обычный режим, научный, история">
 
 ## Грамматика
 

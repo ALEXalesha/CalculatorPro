@@ -20,7 +20,7 @@ The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, s
 
 ```powershell
 dotnet run --project src\CalcPro.Wpf
-dotnet test CalcPro.sln                  # 310 tests
+dotnet test CalcPro.sln                  # 322 tests
 ..\build.ps1 -Only wpf                   # portable .exe and installer into ..\dist
 dotnet run --project tools\CalcPro.Screenshots   # the README frames
 ```
@@ -32,6 +32,12 @@ The portable build is a self-contained single file (about 50 MB compressed); no 
 The five themes of Paint Pro, as the same kind of resource dictionaries (`Resources/Themes/*.xaml`) with the same colours. The palette button in the header opens the list; the window changes at once, and the choice is kept in `%APPDATA%\CalcPro\theme.txt`. `ThemeFileTests` reads the dictionaries as XML: the same keys in all five, readable text on the keys of every theme, and no `StaticResource` to a theme key anywhere in the markup.
 
 <img src="docs/screenshots/themes.png" width="900" alt="The five themes">
+
+## Small window
+
+The window shrinks to 320×500, the minimum of the calculator built into Windows. `WindowLayout` in CalcPro.Core holds the rule, and `MainWindow.ApplyLayout` follows it: below 720 px wide the history opens in place of the keypad, with a back button in its header (an open history column closes when the window narrows and comes back when it widens); below 420 px the title makes room for the buttons; below 640 px high the display, the header and the gaps get smaller. A long result on the display is scaled down in a `Viewbox` instead of being cut with `…`, and history lines wrap.
+
+<img src="docs/screenshots/small.png" width="700" alt="320×500: standard, scientific, history">
 
 ## Grammar
 
