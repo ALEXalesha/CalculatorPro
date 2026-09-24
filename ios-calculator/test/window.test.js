@@ -52,3 +52,10 @@ test('window-state.js goes into the packaged app', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
   assert.ok(pkg.build.files.includes('window-state.js'));
 });
+
+test('no system corners or shadow stick out past the rounded window', () => {
+  // Windows 11 рисовала вокруг прозрачного окна рамку со скруглением 8 px и прямоугольную
+  // тень - на углах они вылезали за скругление 26 px.
+  assert.match(MAIN, /roundedCorners:\s*false/);
+  assert.match(MAIN, /hasShadow:\s*false/);
+});

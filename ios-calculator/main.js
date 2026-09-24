@@ -23,7 +23,11 @@ function createWindow() {
     minHeight: SIZE.minHeight,
     frame: false,
     transparent: true,
-    hasShadow: true,
+    // Своё скругление (26 px, в CSS) и без системных рамки и тени: Windows 11 рисовала
+    // вокруг прозрачного окна свою рамку со скруглением 8 px и прямоугольную тень, и на
+    // углах они торчали за нашим скруглением.
+    hasShadow: false,
+    roundedCorners: false,
     resizable: true,
     maximizable: true,
     minimizable: true,
