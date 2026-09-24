@@ -1,6 +1,6 @@
 {
   "name": "calculator-ios26",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Calculator iOS 26 — Liquid Glass Windows app",
   "author": "ALEXalesha",
   "license": "MIT",
@@ -27,6 +27,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "window-state.js",
       "src/**/*",
       "assets/icon.ico"
     ],

@@ -103,7 +103,7 @@ app.whenReady().then(async () => {
   // режиме каждая видимая кнопка целиком в окне, не ниже 20 px и с подписью, которая
   // в неё влезает.
   const MIN = { w: 280, h: 500 };
-  check('main.js minimum is 280x500', /minWidth:\s*280,\s*\n\s*minHeight:\s*500,/.test(fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')), true);
+  check('main.js minimum is 280x500', /minWidth:\s*280,\s*minHeight:\s*500\b/.test(fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')), true);
   win.setSize(MIN.w, MIN.h);
   await new Promise(r => setTimeout(r, 400));
   const fits = (sel) => js(`(() => {
@@ -149,6 +149,26 @@ app.whenReady().then(async () => {
   await win.webContents.reload();
   await new Promise(r => win.webContents.once('did-finish-load', r));
   check('theme survives a restart', await js('document.documentElement.getAttribute("data-theme")'), 'warm');
+
+  // Размер и место окна между запусками, на настоящем окне Electron: поставить,
+  // запомнить в файл, прочитать и открыть второе окно - оно встаёт туда же.
+  {
+    const { screen } = require('electron');
+    const WS = require(path.join(ROOT, 'window-state.js'));
+    const file = path.join(os.tmpdir(), `calc-window-state-${process.pid}.json`);
+    const area = screen.getPrimaryDisplay().workArea;
+    const want = { x: area.x + 40, y: area.y + 30, width: 300, height: 560 };
+    win.setBounds(want);
+    await new Promise(r => setTimeout(r, 200));
+    check('window state saved', WS.save(file, WS.capture(win)), true);
+    const placed = WS.restore(WS.load(file), [area], { width: 320, height: 640, minWidth: 280, minHeight: 500 });
+    const again = new BrowserWindow({ x: placed.x, y: placed.y, width: placed.width, height: placed.height, show: false, frame: false, transparent: true });
+    const got = again.getBounds();
+    check('second window opens where the first was closed', JSON.stringify([got.x, got.y, got.width, got.height]),
+      JSON.stringify([want.x, want.y, want.width, want.height]));
+    again.destroy();
+    fs.rmSync(file, { force: true });
+  }
 
   check('no console errors', errors.join(' | '), '');
   console.log(failures ? `${failures} check(s) failed` : 'all e2e checks passed');

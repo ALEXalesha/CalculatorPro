@@ -32,3 +32,23 @@ test('the default size is not below the minimum and stays 320x640', () => {
 test('the window stays resizable', () => {
   assert.match(MAIN, /resizable:\s*true/);
 });
+
+// Размер и место окна между запусками (1.5.0): модуль одинаковый в обоих приложениях,
+// main.js им пользуется и кладёт его в сборку.
+test('window-state.js is the same file in both calculators', () => {
+  const other = path.join(__dirname, '..', '..', path.basename(path.join(__dirname, '..')) === 'calcpro-glass' ? 'ios-calculator' : 'calcpro-glass');
+  assert.equal(fs.readFileSync(path.join(__dirname, '..', 'window-state.js'), 'utf8'),
+    fs.readFileSync(path.join(other, 'window-state.js'), 'utf8'));
+});
+
+test('main.js restores the window from the saved state and saves it on close', () => {
+  assert.match(MAIN, /require\('\.\/window-state'\)/);
+  assert.match(MAIN, /WindowState\.restore\(WindowState\.load\(/);
+  assert.match(MAIN, /on\('close',[^\n]*WindowState\.save\(/);
+  for (const event of ['resized', 'moved']) assert.ok(MAIN.includes(`'${event}'`), event);
+});
+
+test('window-state.js goes into the packaged app', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+  assert.ok(pkg.build.files.includes('window-state.js'));
+});
