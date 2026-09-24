@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 571 tests, most of them properties over random input.**
+**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 701 tests, most of them properties over random input.**
 
 [Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md)
 
@@ -22,9 +22,9 @@ Expressions with operator precedence, computed in `decimal`, so `0.1 + 0.2` is e
 
 ## Calc Pro Glass: Electron
 
-<img src="calcpro-glass/docs/screenshots/modes.png" width="760" alt="Calc Pro Glass: Standard, Scientific and Fraction modes">
+<img src="calcpro-glass/docs/screenshots/modes.png" width="760" alt="Calc Pro Glass: Standard, Scientific, Fraction and Programmer modes">
 
-Three modes: Standard, Scientific with DEG/RAD/GRAD and 2nd, and Fraction, where fractions are typed "in a column" with a cursor. The parser is shunting-yard. [More](calcpro-glass/README.md)
+Four modes: Standard, Scientific with DEG/RAD/GRAD and 2nd, Fraction, where fractions are typed "in a column" with a cursor, and Programmer, 64-bit integers in HEX, DEC, OCT and BIN with bitwise operations (Calc Pro has it too). The parser is shunting-yard. [More](calcpro-glass/README.md)
 
 ## Calculator iOS 26: Electron
 
@@ -53,9 +53,9 @@ Calc Pro now draws its own title bar in the colours of the theme, with the app n
 ## Tests
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 342 (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 151 + e2e in Electron
-cd ios-calculator; npm test; npm run test:e2e # 78 + e2e in Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 409 (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 213 + e2e in Electron
+cd ios-calculator; npm test; npm run test:e2e # 79 + e2e in Electron
 ```
 
 Most tests state a law instead of an example: a random expression tree printed with minimal brackets parses back into the same tree; `sin² + cos² = 1`; undoing every key press returns the initial state. The key-press state machines get thousands of random sequences, and after every single press the display, the expression and the memory are checked. [docs/TESTING.md](docs/TESTING.md) lists them all (in Russian).

@@ -13,6 +13,9 @@ A Windows calculator in the Apple Liquid Glass style. C# 12 and WPF on .NET 8, M
 - **Undo/redo through the Command pattern.** Every key press is an `ICalcCommand` with `Execute` and `Undo`.
 - **An explicit input state machine** (`CalcPhase`) with invariants the tests check after every press.
 - **MVVM.** The view only binds to the view model; the code-behind has only animations and the theme menu.
+- **Programmer mode** (the mode menu: Standard, Scientific, Programmer). 64-bit signed integers in HEX, DEC, OCT and BIN at once, `+ − × ÷ Mod`, `AND OR XOR NOT`, `<< >>`, brackets, A-F from the keyboard. The engine, `ProgrammerCalculator`, shares its 52 examples with Calc Pro Glass (`test-vectors/programmer.json`).
+
+<img src="docs/screenshots/programmer.png" width="60%" alt="Calc Pro: programmer mode">
 
 The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, so its tests run on Linux in CI.
 
@@ -20,7 +23,7 @@ The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, s
 
 ```powershell
 dotnet run --project src\CalcPro.Wpf
-dotnet test CalcPro.sln                  # 342 tests
+dotnet test CalcPro.sln                  # 409 tests
 ..\build.ps1 -Only wpf                   # portable .exe and installer into ..\dist
 dotnet run --project tools\CalcPro.Screenshots   # the README frames
 ```

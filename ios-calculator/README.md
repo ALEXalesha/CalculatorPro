@@ -28,7 +28,7 @@ The five themes of Paint Pro under «Тема» in the `•••` menu; the cho
 ```powershell
 npm ci
 npm start              # F12 opens DevTools, only when run from sources
-npm test               # 78 unit and property tests
+npm test               # 79 unit and property tests
 npm run test:e2e       # the real page in Electron
 npx electron tools/make-screenshots.js   # the README frames
 ..\build.ps1 -Only ios # portable exe and NSIS installer into ..\dist
