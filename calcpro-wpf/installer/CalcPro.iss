@@ -2,10 +2,10 @@
 ; Bundles the single-file self-contained build produced by build.ps1.
 ;
 ; Compile (build.ps1 does this for you):
-;   ISCC.exe /DMyAppVersion=1.3.1 /DSourceExe=<path\CalcPro.exe> /DOutputDir=<dist> installer\CalcPro.iss
+;   ISCC.exe /DMyAppVersion=1.4.0 /DSourceExe=<path\CalcPro.exe> /DOutputDir=<dist> installer\CalcPro.iss
 
 #ifndef MyAppVersion
-  #define MyAppVersion "1.3.1"
+  #define MyAppVersion "1.4.0"
 #endif
 #ifndef SourceExe
   #define SourceExe "..\..\dist\.stage\calcpro-wpf\CalcPro.exe"

@@ -28,7 +28,7 @@ The five themes of Paint Pro under «Тема» in the `•••` menu; the cho
 ```powershell
 npm ci
 npm start              # F12 opens DevTools, only when run from sources
-npm test               # 54 unit and property tests
+npm test               # 58 unit and property tests
 npm run test:e2e       # the real page in Electron
 npx electron tools/make-screenshots.js   # the README frames
 ..\build.ps1 -Only ios # portable exe and NSIS installer into ..\dist
@@ -37,7 +37,7 @@ npx electron tools/make-screenshots.js   # the README frames
 ## Layout
 
 ```
-main.js             320×640 window (minimum), frameless, transparent; IPC for minimise/close
+main.js             320×640 window (minimum 280×500), frameless, transparent; IPC for minimise/close
 preload.js          contextBridge → window.windowAPI
 src/index.html      markup and CSS
 src/calc-engine.js  engine without DOM (UMD)
@@ -47,7 +47,7 @@ e2e/smoke.js
 tools/make-screenshots.js
 ```
 
-`fit()` in `app.js` sizes the buttons: a cell is the smaller of what fits by width and by height after reserving room for the display, so buttons never turn oval.
+`fit()` in `app.js` sizes the buttons: the columns always take the full width, and a row is the smaller of the width-based and the height-based size, so keys are round when the height allows and stretch into capsules when it does not, as on an iPhone in landscape. In a low window (the minimum is 280×500, below the 320×500 of the Windows calculator) the display gives up height first. Long numbers in the history wrap instead of sliding out of sight.
 
 ## Tests
 

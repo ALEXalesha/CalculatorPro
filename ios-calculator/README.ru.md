@@ -30,7 +30,7 @@
 ```powershell
 npm ci
 npm start              # запуск (F12 — DevTools, только из исходников)
-npm test               # 54 unit- и property-тестов
+npm test               # 58 unit- и property-тестов
 npm run test:e2e       # e2e в настоящем Electron
 ..\build.ps1 -Only ios     # portable + NSIS-установщик в ..\dist
 ```
@@ -38,7 +38,7 @@ npm run test:e2e       # e2e в настоящем Electron
 ## Устройство
 
 ```
-main.js            окно 320×640 (минимум), frameless, transparent; IPC свернуть/закрыть
+main.js            окно 320×640 (минимум 280×500), frameless, transparent; IPC свернуть/закрыть
 preload.js         contextBridge → window.windowAPI
 src/index.html     разметка и CSS
 src/calc-engine.js движок без DOM (UMD)
@@ -48,8 +48,11 @@ test/engine.test.js
 e2e/smoke.js
 ```
 
-Размер кнопок считает `fit()` в `app.js`: ячейка = min(по ширине, по высоте) после
-резерва под дисплей, поэтому кнопки не становятся овальными.
+Размер кнопок считает `fit()` в `app.js`: столбцы всегда на всю ширину, а ряд - меньшее
+из размера по ширине и по высоте, поэтому клавиши круглые, когда хватает высоты, и
+капсулы, когда не хватает, как на iPhone в альбомной ориентации. В низком окне (минимум
+280×500, меньше, чем 320×500 у калькулятора Windows) первым ужимается табло. Длинные
+числа в истории переносятся, а не уезжают за край.
 
 ## Хоткеи
 

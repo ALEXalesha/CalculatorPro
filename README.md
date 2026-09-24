@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 491 tests, most of them properties over random input.**
+**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 511 tests, most of them properties over random input.**
 
 [Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md)
 
@@ -38,12 +38,18 @@ All three have the same five themes as Paint Pro, with the same colours: Сте�
 
 <img src="calcpro-glass/docs/screenshots/themes.png" width="900" alt="The five themes of Paint Pro in Calc Pro Glass">
 
+## Small windows
+
+All three shrink as far as the calculator built into Windows, whose minimum is 320×500, or further: Calc Pro to 320×500, Calc Pro Glass and Calculator iOS 26 to 280×500. In a low window the display and the gaps give up height first, so the keys of the scientific mode still fit. In a narrow Calc Pro the history opens in place of the keypad, as in the Windows calculator, with a back button in its header; it goes back to its column when the window is wide again. A long result on the display gets smaller instead of losing digits under `…`, and a long example in the history wraps.
+
+<img src="calcpro-wpf/docs/screenshots/small.png" width="700" alt="Calc Pro at 320×500: standard, scientific and the history in place of the keypad">
+
 ## Tests
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 310 (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 127 + e2e in Electron
-cd ios-calculator; npm test; npm run test:e2e # 54 + e2e in Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 322 (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 131 + e2e in Electron
+cd ios-calculator; npm test; npm run test:e2e # 58 + e2e in Electron
 ```
 
 Most tests state a law instead of an example: a random expression tree printed with minimal brackets parses back into the same tree; `sin² + cos² = 1`; undoing every key press returns the initial state. The key-press state machines get thousands of random sequences, and after every single press the display, the expression and the memory are checked. [docs/TESTING.md](docs/TESTING.md) lists them all (in Russian).
@@ -51,6 +57,8 @@ Most tests state a law instead of an example: a random expression tree printed w
 These properties keep finding real bugs. Getting this repository ready for publication, the random-keys property of Calc Pro Glass found that `EE` right after `=` glued an `E` onto a stale display (`0E`) which the next digit then wiped. The README screenshots found two more in Calc Pro: the expression line showed `*` and `/` while the buttons say `×` and `÷`, and the memory badge stretched into a tall bar.
 
 The theme tests read the theme files themselves: all five must define the same keys, text must keep at least 4.5:1 on its keys in every theme, and the markup may reach theme colours only through the theme. They found that the AC, ± and % keys were below that contrast in two themes, 3.37:1 in glass and 2.60:1 in formal, and that was fixed before the release.
+
+Checks for the small window: `WindowLayoutTests` pin the rule itself (the minimum, the thresholds, the history closing when the window narrows and coming back when it widens, as an FsCheck property over random sequences of widths), and the screenshot program opens the real window at 320×500 and fails if any visible button leaves the window, is under 20 px, does not fit its grid cell, or if a line of the history or the display is cut off. That check found two bugs before the release: AC, C, ⌫, the operators and the scientific keys have their own style with a minimum height of 42 and were cut in half by the lower rows, and the display showed `14662398875…` for 146623988754610578. The end-to-end runs of both Electron apps resize the window to 280×500 and check every key in every mode, and a long example in the history.
 
 CI runs the C# and JavaScript engine tests on every push. The end-to-end runs need a real Electron window and are run locally before a release.
 
