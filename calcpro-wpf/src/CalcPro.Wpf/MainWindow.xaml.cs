@@ -27,7 +27,40 @@ public partial class MainWindow : Window
         // окне не влезали в ряд - ряд срезал их снизу.
         foreach (var key in KeysGrid.Children.OfType<Button>())
             key.MinHeight = 24;
+        RestorePlacement();
         Loaded += OnLoaded;
+    }
+
+    /// <summary>
+    /// Окно открывается в том размере и на том месте, где его закрыли (правило -
+    /// WindowPlacement: окно на отключённом мониторе встанет по центру, больше экрана -
+    /// ужмётся). Файл не читается, если WindowPlacementService.FilePath = null.
+    /// </summary>
+    private void RestorePlacement()
+    {
+        var saved = WindowPlacementService.Load();
+        if (saved is null) return;
+        var p = WindowPlacement.Restore(saved, WindowPlacementService.Screens(),
+            WindowLayout.DefaultWidth, WindowLayout.DefaultHeight, WindowLayout.MinWidth, WindowLayout.MinHeight);
+        Width = p.Width;
+        Height = p.Height;
+        if (p.Left is { } left && p.Top is { } top)
+        {
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = left;
+            Top = top;
+        }
+        if (p.Maximized) WindowState = WindowState.Maximized;
+    }
+
+    protected override void OnClosing(CancelEventArgs e)
+    {
+        base.OnClosing(e);
+        if (e.Cancel) return;
+        // У развёрнутого или свёрнутого окна запоминаются границы, к которым оно вернётся.
+        var b = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        if (!b.IsEmpty)
+            WindowPlacementService.Save(new WindowPlacement.Placement(b.Left, b.Top, b.Width, b.Height, WindowState == WindowState.Maximized));
     }
 
     /// <summary>
@@ -64,7 +97,83 @@ public partial class MainWindow : Window
         ApplyLayout();
     }
 
-    private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e) => ApplyLayout();
+    private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        ApplyLayout();
+        UpdateCornerClip();
+    }
+
+    private void OnMinimizeClick(object sender, RoutedEventArgs e) => SystemCommands.MinimizeWindow(this);
+
+    private void OnCloseClick(object sender, RoutedEventArgs e) => SystemCommands.CloseWindow(this);
+
+    /// <summary>Радиус углов окна: чуть больше системных 8 px Windows 11.</summary>
+    public const double CornerRadiusPx = 14;
+
+    /// <summary>
+    /// Углы окна срезаются по скруглённому прямоугольнику. У развёрнутого окна углы
+    /// прямые, как у всех развёрнутых окон.
+    /// </summary>
+    private void UpdateCornerClip()
+    {
+        var r = WindowState == WindowState.Maximized ? 0 : CornerRadiusPx;
+        var w = WindowRoot.ActualWidth;
+        var h = WindowRoot.ActualHeight;
+        WindowRoot.Clip = w > 0 && h > 0 ? new RectangleGeometry(new Rect(0, 0, w, h), r, r) : null;
+        WindowEdge.CornerRadius = new CornerRadius(r);
+        WindowEdge.Visibility = WindowState == WindowState.Maximized ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    protected override void OnStateChanged(EventArgs e)
+    {
+        base.OnStateChanged(e);
+        UpdateCornerClip();
+    }
+
+    /// <summary>
+    /// Размер развёрнутого окна. Окно без системной рамки (прозрачное, ради скруглённых
+    /// углов) Windows разворачивает на весь монитор, поверх панели задач; здесь ему
+    /// назначается рабочая область его монитора - как у обычных окон.
+    /// </summary>
+    protected override void OnSourceInitialized(EventArgs e)
+    {
+        base.OnSourceInitialized(e);
+        if (PresentationSource.FromVisual(this) is System.Windows.Interop.HwndSource source)
+            source.AddHook(WndProc);
+    }
+
+    private static IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        const int WM_GETMINMAXINFO = 0x0024;
+        if (msg != WM_GETMINMAXINFO) return IntPtr.Zero;
+        var monitor = MonitorFromWindow(hwnd, 2 /* MONITOR_DEFAULTTONEAREST */);
+        var info = new MonitorInfo { Size = System.Runtime.InteropServices.Marshal.SizeOf<MonitorInfo>() };
+        if (monitor == IntPtr.Zero || !GetMonitorInfo(monitor, ref info)) return IntPtr.Zero;
+        var mmi = System.Runtime.InteropServices.Marshal.PtrToStructure<MinMaxInfo>(lParam);
+        // Координаты развёрнутого окна - относительно своего монитора.
+        mmi.MaxPosition = new Point32(info.Work.Left - info.Monitor.Left, info.Work.Top - info.Monitor.Top);
+        mmi.MaxSize = new Point32(info.Work.Right - info.Work.Left, info.Work.Bottom - info.Work.Top);
+        System.Runtime.InteropServices.Marshal.StructureToPtr(mmi, lParam, false);
+        return IntPtr.Zero; // остальное (минимум окна) WPF заполнит сам
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct Point32 { public int X, Y; public Point32(int x, int y) { X = x; Y = y; } }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct MinMaxInfo { public Point32 Reserved, MaxSize, MaxPosition, MinTrackSize, MaxTrackSize; }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct Rect32 { public int Left, Top, Right, Bottom; }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    private struct MonitorInfo { public int Size; public Rect32 Monitor; public Rect32 Work; public uint Flags; }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 
     // Окно создаётся в размере по умолчанию, где история рядом.
     private bool _wasBeside = true;
@@ -99,7 +208,6 @@ public partial class MainWindow : Window
         HistoryPanel.Margin = layout.HistoryBeside ? new Thickness(7, 0, 0, 0) : new Thickness(0);
         HistoryBackButton.Visibility = layout.HistoryBeside ? Visibility.Collapsed : Visibility.Visible;
 
-        TitleText.Visibility = layout.ShowTitle ? Visibility.Visible : Visibility.Collapsed;
         CalcInner.Margin = new Thickness(layout.Narrow ? 12 : 18);
         HeaderGrid.Margin = new Thickness(0, 0, 0, layout.Compact ? 8 : 14);
         DisplayPanel.Padding = layout.Compact ? new Thickness(14, 8, 14, 8) : new Thickness(18, 16, 18, 16);

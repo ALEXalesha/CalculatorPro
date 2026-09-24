@@ -48,10 +48,40 @@ public class WindowLayoutTests
     }
 
     [Fact]
+    public void Pack_links_in_the_markup_name_the_real_assembly()
+    {
+        // Значок в заголовке окна не показывался: ссылка называла сборку CalcPro.Wpf, а
+        // она называется CalcPro (AssemblyName). WPF при этом молчит - картинки просто нет.
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "CalcPro.sln"))) dir = dir.Parent;
+        var wpf = Path.Combine(dir!.FullName, "src", "CalcPro.Wpf");
+        var assembly = XDocument.Load(Path.Combine(wpf, "CalcPro.Wpf.csproj")).Descendants("AssemblyName").Single().Value;
+        var links = Directory.GetFiles(wpf, "*.xaml", SearchOption.AllDirectories)
+            .Where(f => !f.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar))
+            .SelectMany(f => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(f), @"pack://application:,,,/([^;/""]+);component")
+                .Select(m => m.Groups[1].Value)).ToArray();
+        Assert.NotEmpty(links);
+        Assert.All(links, name => Assert.Equal(assembly, name));
+    }
+
+    [Fact]
+    public void The_window_draws_its_own_title_bar_and_rounded_corners()
+    {
+        var window = MainWindow();
+        Assert.Equal("None", (string?)window.Attribute("WindowStyle"));
+        Assert.Equal("True", (string?)window.Attribute("AllowsTransparency"));
+        XNamespace p = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+        Assert.Single(window.Descendants(p + "WindowChrome"));
+        // Кнопки заголовка должны ловить щелчки внутри полосы заголовка WindowChrome.
+        Assert.Contains(window.Descendants(p + "Setter"), s => (string?)s.Attribute("Property") == "WindowChrome.IsHitTestVisibleInChrome"
+                                                              && (string?)s.Attribute("Value") == "True");
+    }
+
+    [Fact]
     public void The_default_window_has_the_full_layout_with_history_beside()
     {
         var l = WindowLayout.For(WindowLayout.DefaultWidth, WindowLayout.DefaultHeight, historyOpen: true);
-        Assert.Equal(new WindowLayout.Layout(HistoryBeside: true, Narrow: false, ShowTitle: true, Compact: false,
+        Assert.Equal(new WindowLayout.Layout(HistoryBeside: true, Narrow: false, Compact: false,
             ShowKeypad: true, ShowHistory: true), l);
     }
 
@@ -59,7 +89,7 @@ public class WindowLayoutTests
     public void The_minimum_window_is_narrow_and_compact_and_history_takes_the_place_of_the_keypad()
     {
         var closed = WindowLayout.For(WindowLayout.MinWidth, WindowLayout.MinHeight, historyOpen: false);
-        Assert.True(closed is { HistoryBeside: false, Narrow: true, ShowTitle: false, Compact: true, ShowKeypad: true, ShowHistory: false });
+        Assert.True(closed is { HistoryBeside: false, Narrow: true, Compact: true, ShowKeypad: true, ShowHistory: false });
         var open = WindowLayout.For(WindowLayout.MinWidth, WindowLayout.MinHeight, historyOpen: true);
         Assert.True(open is { ShowKeypad: false, ShowHistory: true });
     }
@@ -68,7 +98,7 @@ public class WindowLayoutTests
     public void The_thresholds_lie_between_the_minimum_and_the_default_size()
     {
         Assert.InRange(WindowLayout.HistoryBesideFrom, WindowLayout.MinWidth + 1, WindowLayout.DefaultWidth);
-        Assert.InRange(WindowLayout.TitleFrom, WindowLayout.MinWidth + 1, WindowLayout.HistoryBesideFrom);
+        Assert.InRange(WindowLayout.NarrowBelow, WindowLayout.MinWidth + 1, WindowLayout.HistoryBesideFrom);
         Assert.InRange(WindowLayout.CompactBelow, WindowLayout.MinHeight + 1, WindowLayout.DefaultHeight);
     }
 
@@ -81,7 +111,7 @@ public class WindowLayoutTests
                 && l.ShowHistory == open
                 // В узком окне клавиатура и история никогда не делят место.
                 && (l.HistoryBeside || !(l.ShowKeypad && l.ShowHistory))
-                && l.ShowTitle == !l.Narrow;
+                && (!l.HistoryBeside || !l.Narrow);
         });
 
     [Theory]

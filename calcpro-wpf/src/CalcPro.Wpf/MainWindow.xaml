@@ -11,15 +11,60 @@
         MinWidth="320" MinHeight="500"
         SizeChanged="OnWindowSizeChanged"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource WindowBaseBg}"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
         UseLayoutRounding="True"
         FontFamily="{StaticResource UiFontFamily}"
         Foreground="{DynamicResource TextBrush}">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="44"
+                      ResizeBorderThickness="6"
+                      GlassFrameThickness="0"
+                      CornerRadius="0"
+                      UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
 
     <Window.Resources>
         <converters:BoolToVisConverter x:Key="BoolToVis" />
         <converters:InvBoolToVisConverter x:Key="InvBoolToVis" />
         <converters:PrettyExpressionConverter x:Key="PrettyExpression" />
+
+        <!-- Кнопки окна в цвет темы, как в Calc Pro Glass: системная полоса заголовка со
+             светлыми кнопками бросалась в глаза на тёмном стекле. -->
+        <Style x:Key="CaptionButton" TargetType="Button">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Margin" Value="6,0,0,0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+            <Setter Property="Background" Value="{DynamicResource GlassBg}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource GlassBorder}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" CornerRadius="14" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource GlassBgStrong}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="Tag" Value="close" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="Bg" Property="Background" Value="#D9FF5050" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Window.DataContext>
@@ -74,15 +119,45 @@
         <KeyBinding Key="M" Modifiers="Ctrl" Command="{Binding PressMemoryCommand}" CommandParameter="MR" />
     </Window.InputBindings>
 
-    <Grid>
+    <!-- Окно прозрачное, фон и скруглённые углы рисует этот Grid: у системного скругления
+         Windows 11 радиус около 8 px, а нужен побольше. Углы срезает Clip из
+         UpdateCornerClip (у развёрнутого окна - прямые). -->
+    <Grid x:Name="WindowRoot" Background="{DynamicResource WindowBaseBg}">
         <!-- ==================== Layer 0: cosmic background gradients ==================== -->
         <Rectangle Fill="{DynamicResource WindowGlowVioletTL}" IsHitTestVisible="False" />
         <Rectangle Fill="{DynamicResource WindowGlowPinkTR}" IsHitTestVisible="False" />
         <Rectangle Fill="{DynamicResource WindowGlowCyanBR}" IsHitTestVisible="False" />
         <Rectangle Fill="{DynamicResource WindowGlowGreenBL}" IsHitTestVisible="False" />
 
+        <!-- ==================== Свой заголовок окна ====================
+             Системная полоса убрана (WindowChrome), рамка Windows осталась: прилипание к
+             краям, изменение размера, тень и скругление Windows 11 работают как раньше.
+             Тянуть окно можно за всю верхнюю полосу, двойной щелчок разворачивает. -->
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="18,14,0,0"
+                    IsHitTestVisible="False">
+            <Image Source="pack://application:,,,/CalcPro;component/Resources/app.png" Width="16" Height="16" Margin="0,0,8,0"
+                   RenderOptions.BitmapScalingMode="HighQuality" />
+            <TextBlock Text="Calc Pro" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{DynamicResource TextDimBrush}" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,8,12,0"
+                    Panel.ZIndex="10">
+            <Button x:Name="MinimizeButton" Style="{StaticResource CaptionButton}" ToolTip="Свернуть" Click="OnMinimizeClick">
+                <Path Data="M0,0 L10,0" Stroke="{DynamicResource TextBrush}" StrokeThickness="1.4" Width="10" Height="1.4" Stretch="Fill" />
+            </Button>
+            <Button x:Name="CloseButton" Style="{StaticResource CaptionButton}" Tag="close" ToolTip="Закрыть" Click="OnCloseClick">
+                <Path Data="M0,0 L9,9 M9,0 L0,9" Stroke="{DynamicResource TextBrush}" StrokeThickness="1.4" Width="9" Height="9" />
+            </Button>
+        </StackPanel>
+
         <!-- ==================== Layer 1: main content ==================== -->
-        <Grid Margin="14">
+        <Grid x:Name="ContentRoot" Margin="14,44,14,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -112,13 +187,6 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock x:Name="TitleText"
-                                   Grid.Column="0"
-                                   Text="Calc Pro"
-                                   FontSize="14"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextDimBrush}"
-                                   VerticalAlignment="Center" />
 
                         <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,8,0">
                             <Border Background="{DynamicResource AccentGradient}"
@@ -422,13 +490,17 @@
                                     <Button Style="{StaticResource GlassButton}"
                                             Margin="0,4"
                                             HorizontalContentAlignment="Stretch"
-                                            Padding="10,8"
                                             Command="{Binding DataContext.UseHistoryEntryCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                             CommandParameter="{Binding}">
-                                        <StackPanel>
+                                        <!-- Пример и результат по правой стенке, как в калькуляторе Windows:
+                                             раньше пара стояла по центру кнопки, и результат прыгал
+                                             вслед за длиной примера. Отступ здесь, а не Padding кнопки:
+                                             шаблон GlassButton Padding не применяет. -->
+                                        <StackPanel Margin="12,8">
                                             <TextBlock Text="{Binding Expression, Converter={StaticResource PrettyExpression}}"
                                                        FontSize="12"
                                                        Foreground="{DynamicResource TextDimBrush}"
+                                                       TextAlignment="Right"
                                                        TextWrapping="Wrap" />
                                             <TextBlock Text="{Binding Result}"
                                                        FontSize="18"
@@ -453,5 +525,9 @@
                 </Grid>
             </ContentControl>
         </Grid>
+
+        <!-- Тонкая светлая кромка по скруглённому краю, как у панелей стекла. -->
+        <Border x:Name="WindowEdge" BorderBrush="{DynamicResource GlassBorder}" BorderThickness="1"
+                CornerRadius="14" IsHitTestVisible="False" Panel.ZIndex="20" />
     </Grid>
 </Window>
