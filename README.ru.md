@@ -45,9 +45,9 @@
 Результат в `dist/`:
 
 ```
-CalcPro-1.3.0-Portable.exe          CalcPro-1.3.0-Setup.exe
-CalcProGlass-1.3.0-Portable.exe     CalcProGlass-1.3.0-Setup.exe
-CalculatorIOS26-1.3.0-Portable.exe  CalculatorIOS26-1.3.0-Setup.exe
+CalcPro-1.3.1-Portable.exe          CalcPro-1.3.1-Setup.exe
+CalcProGlass-1.3.1-Portable.exe     CalcProGlass-1.3.1-Setup.exe
+CalculatorIOS26-1.3.1-Portable.exe  CalculatorIOS26-1.3.1-Setup.exe
 ```
 
 Запуск из исходников:
