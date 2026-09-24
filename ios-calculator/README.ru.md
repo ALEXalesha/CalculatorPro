@@ -30,7 +30,7 @@
 ```powershell
 npm ci
 npm start              # запуск (F12 — DevTools, только из исходников)
-npm test               # 58 unit- и property-тестов
+npm test               # 78 unit- и property-тестов
 npm run test:e2e       # e2e в настоящем Electron
 ..\build.ps1 -Only ios     # portable + NSIS-установщик в ..\dist
 ```
@@ -38,7 +38,8 @@ npm run test:e2e       # e2e в настоящем Electron
 ## Устройство
 
 ```
-main.js            окно 320×640 (минимум 280×500), frameless, transparent; IPC свернуть/закрыть
+main.js            окно 320×640 (минимум 280×500), frameless, transparent; IPC свернуть/закрыть;
+                   открывается там, где его закрыли (window-state.js, тот же файл, что у Calc Pro Glass)
 preload.js         contextBridge → window.windowAPI
 src/index.html     разметка и CSS
 src/calc-engine.js движок без DOM (UMD)

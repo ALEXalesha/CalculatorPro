@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 511 tests, most of them properties over random input.**
+**Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 571 tests, most of them properties over random input.**
 
 [Download for Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [Русская версия этого файла](README.ru.md)
 
@@ -44,12 +44,18 @@ All three shrink as far as the calculator built into Windows, whose minimum is 3
 
 <img src="calcpro-wpf/docs/screenshots/small.png" width="700" alt="Calc Pro at 320×500: standard, scientific and the history in place of the keypad">
 
+## The window remembers itself
+
+All three open where and how large they were closed, maximized too. Whatever the saved file holds, the window opens where it can be seen and taken by its title bar: on a monitor that has been unplugged it opens centred on the main one, larger than the screen it is cut to it, below the minimum it is raised to it, and a damaged file gives the default size. The rule is a plain function with property tests over random screen layouts (`window-state.js` in the Electron apps, `WindowPlacement` in Calc Pro); they found that on a screen lower than the minimum window the title bar was pushed above the screen. The file is written through a temporary one, so a killed process leaves the old file rather than half of a new one.
+
+Calc Pro now draws its own title bar in the colours of the theme, with the app name, round minimize and close buttons like those of Calc Pro Glass and corners rounded a little more than Windows 11 does (14 px). Snapping, resizing by the edge and maximizing work as before; a maximized window keeps off the taskbar.
+
 ## Tests
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 322 (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 131 + e2e in Electron
-cd ios-calculator; npm test; npm run test:e2e # 58 + e2e in Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 342 (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 151 + e2e in Electron
+cd ios-calculator; npm test; npm run test:e2e # 78 + e2e in Electron
 ```
 
 Most tests state a law instead of an example: a random expression tree printed with minimal brackets parses back into the same tree; `sin² + cos² = 1`; undoing every key press returns the initial state. The key-press state machines get thousands of random sequences, and after every single press the display, the expression and the memory are checked. [docs/TESTING.md](docs/TESTING.md) lists them all (in Russian).

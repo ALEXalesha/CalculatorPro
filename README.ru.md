@@ -2,7 +2,7 @@
 
 # Calculators
 
-**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 511 тестов, большая часть — свойства на случайных входах.**
+**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 571 тест, большая часть — свойства на случайных входах.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
 
@@ -38,6 +38,12 @@
 
 <img src="calcpro-wpf/docs/screenshots/small.png" width="700" alt="Calc Pro в окне 320×500: обычный режим, научный и история на месте клавиатуры">
 
+## Окно запоминает себя
+
+Все три открываются там и такого размера, где их закрыли, в том числе развёрнутыми. Что бы ни лежало в файле, окно открывается там, где его видно и можно взять за заголовок: на отключённом мониторе - по центру основного, больше экрана - ужимается, меньше минимума - растёт, испорченный файл даёт размер по умолчанию. Правило - обычная функция со свойствами на случайных раскладках экранов (`window-state.js` у Electron-калькуляторов, `WindowPlacement` у Calc Pro); они нашли, что на экране ниже минимального окна заголовок уезжал выше экрана. Файл пишется через временный, поэтому убитый процесс оставляет старый файл, а не половину нового.
+
+Calc Pro теперь рисует свой заголовок в цветах темы: название, круглые кнопки «свернуть» и «закрыть», как у Calc Pro Glass, и углы чуть круглее, чем у Windows 11 (14 px). Прилипание к краям, изменение размера за край и разворачивание работают как раньше; развёрнутое окно не закрывает панель задач.
+
 ## Быстрый старт
 
 Нужны .NET SDK 8+, Node.js 20+ и Inno Setup 6 (для установщика Calc Pro).
@@ -51,9 +57,9 @@
 Результат в `dist/`:
 
 ```
-CalcPro-1.4.0-Portable.exe          CalcPro-1.4.0-Setup.exe
-CalcProGlass-1.4.0-Portable.exe     CalcProGlass-1.4.0-Setup.exe
-CalculatorIOS26-1.4.0-Portable.exe  CalculatorIOS26-1.4.0-Setup.exe
+CalcPro-1.5.0-Portable.exe          CalcPro-1.5.0-Setup.exe
+CalcProGlass-1.5.0-Portable.exe     CalcProGlass-1.5.0-Setup.exe
+CalculatorIOS26-1.5.0-Portable.exe  CalculatorIOS26-1.5.0-Setup.exe
 ```
 
 Запуск из исходников:
@@ -67,9 +73,9 @@ cd ios-calculator; npm ci; npm start
 ## Тесты
 
 ```powershell
-dotnet test calcpro-wpf\CalcPro.sln          # 322 теста (xUnit + FsCheck)
-cd calcpro-glass;  npm test; npm run test:e2e # 131 unit + e2e в Electron
-cd ios-calculator; npm test; npm run test:e2e # 58 unit + e2e в Electron
+dotnet test calcpro-wpf\CalcPro.sln          # 342 теста (xUnit + FsCheck)
+cd calcpro-glass;  npm test; npm run test:e2e # 151 unit + e2e в Electron
+cd ios-calculator; npm test; npm run test:e2e # 78 unit + e2e в Electron
 ```
 
 Основа — property-based тесты: генератор выдаёт тысячи случайных выражений и

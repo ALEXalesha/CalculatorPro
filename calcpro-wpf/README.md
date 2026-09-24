@@ -20,7 +20,7 @@ The engine, `CalcPro.Core`, targets plain `net8.0` and does not reference WPF, s
 
 ```powershell
 dotnet run --project src\CalcPro.Wpf
-dotnet test CalcPro.sln                  # 322 tests
+dotnet test CalcPro.sln                  # 342 tests
 ..\build.ps1 -Only wpf                   # portable .exe and installer into ..\dist
 dotnet run --project tools\CalcPro.Screenshots   # the README frames
 ```
@@ -38,6 +38,12 @@ The five themes of Paint Pro, as the same kind of resource dictionaries (`Resour
 The window shrinks to 320×500, the minimum of the calculator built into Windows. `WindowLayout` in CalcPro.Core holds the rule, and `MainWindow.ApplyLayout` follows it: below 720 px wide the history opens in place of the keypad, with a back button in its header (an open history column closes when the window narrows and comes back when it widens); below 420 px the title makes room for the buttons; below 640 px high the display, the header and the gaps get smaller. A long result on the display is scaled down in a `Viewbox` instead of being cut with `…`, and history lines wrap.
 
 <img src="docs/screenshots/small.png" width="700" alt="320×500: standard, scientific, history">
+
+## Window
+
+The window opens where and how large it was closed (`%APPDATA%\CalcPro\window.txt`). `WindowPlacement` in CalcPro.Core decides where it may go: a window on an unplugged monitor is centred, one larger than the screen is cut to it, and the title bar always stays on a screen. `WindowPlacementService` reads the work areas of all monitors and writes the file through a temporary one.
+
+The title bar is the app's own (`WindowChrome`, a transparent window): the name, round minimize and close buttons in the theme's colours, corners rounded at 14 px. A maximized window gets the work area of its monitor through `WM_GETMINMAXINFO`, so it keeps off the taskbar.
 
 ## Grammar
 
