@@ -67,8 +67,87 @@ internal static class Program
         CalcPro.Wpf.Services.ThemeService.Apply(CalcPro.Core.Services.ThemeCatalog.DefaultId);
         SaveGrid(frames, output, "themes.png");
 
+        // Маленькое окно: минимум как у калькулятора Windows. Это же и проверка раскладки:
+        // каждая видимая кнопка должна целиком стоять в окне и быть не меньше 20 пикселей,
+        // иначе программа падает с кодом 1 и называет кнопку.
+        // Длинный пример: в узкой истории он должен переноситься, а не обрезаться.
+        Press(vm, "AC 1 2 3 4 5 6 7 8 9 * 9 8 7 6 5 4 3 2 1 + 1 1 1 1 1 1 1 1 1 * 2 2 2 2 2 2 2 2 2 - 3 3 3 3 3 3 3 3 3 =");
+        window.Width = CalcPro.Core.Services.WindowLayout.MinWidth;
+        window.Height = CalcPro.Core.Services.WindowLayout.MinHeight;
+        Wait(300);
+        var small = new List<BitmapSource>();
+        var problems = new List<string>();
+        small.Add(RenderChecked(window, "standard", problems));
+        vm.ToggleModeCommand.Execute(null);
+        small.Add(RenderChecked(window, "scientific", problems));
+        vm.ToggleModeCommand.Execute(null);
+        vm.ToggleHistoryCommand.Execute(null);
+        small.Add(RenderChecked(window, "history", problems));
+        vm.ToggleHistoryCommand.Execute(null);
+        SaveGrid(small, output, "small.png");
+
         window.Close();
-        return 0;
+        foreach (var p in problems) Console.Error.WriteLine("  раскладка: " + p);
+        return problems.Count == 0 ? 0 : 1;
+    }
+
+    /// <summary>Кадр и проверка, что все видимые кнопки целиком в окне и не мельче 20 пикселей.</summary>
+    private static BitmapSource RenderChecked(Window window, string state, List<string> problems)
+    {
+        var frame = Render(window);
+        var content = (FrameworkElement)window.Content;
+        var bounds = new Rect(0, 0, content.ActualWidth, content.ActualHeight);
+        var buttons = Descendants(content).OfType<System.Windows.Controls.Button>()
+            .Where(b => b.IsVisible && b.ActualWidth > 0).ToList();
+        foreach (var b in buttons)
+        {
+            var r = b.TransformToAncestor(content).TransformBounds(new Rect(0, 0, b.ActualWidth, b.ActualHeight));
+            var name = $"{state} {window.Width}x{window.Height}: «{Label(b)}»";
+            if (!bounds.Contains(r)) problems.Add($"{name} выходит за окно ({r})");
+            if (r.Width < 20 || r.Height < 20) problems.Add($"{name} {r.Width:0}x{r.Height:0} - мельче 20 пикселей");
+            // Кнопка может стоять в окне, но не влезать в свою ячейку сетки: тогда ячейка
+            // её обрезает. Так было с AC, ÷ и научными клавишами - у их стилей MinHeight 42.
+            var slot = System.Windows.Controls.Primitives.LayoutInformation.GetLayoutSlot(b);
+            if (b.ActualHeight + b.Margin.Top + b.Margin.Bottom > slot.Height + 0.5 ||
+                b.ActualWidth + b.Margin.Left + b.Margin.Right > slot.Width + 0.5)
+                problems.Add($"{name} {b.ActualWidth:0}x{b.ActualHeight:0} не влезает в свою ячейку {slot.Width:0}x{slot.Height:0}");
+        }
+        // Строки истории и результат на табло не обрезаются: без переноса длинный
+        // результат в истории уходил за край, а на табло в узком окне от
+        // 146623988754610578 оставалось «14662398875…».
+        var texts = new List<System.Windows.Controls.TextBlock>();
+        if (window.FindName("HistoryPanel") is FrameworkElement history && history.IsVisible)
+            texts.AddRange(Descendants(history).OfType<System.Windows.Controls.TextBlock>());
+        if (window.FindName("DisplayText") is System.Windows.Controls.TextBlock display && display.IsVisible)
+            texts.Add(display);
+        {
+            foreach (var tb in texts.Where(t => t.IsVisible && t.TextWrapping == TextWrapping.NoWrap))
+            {
+                var text = new FormattedText(tb.Text, System.Globalization.CultureInfo.CurrentCulture, tb.FlowDirection,
+                    new Typeface(tb.FontFamily, tb.FontStyle, tb.FontWeight, tb.FontStretch), tb.FontSize, Brushes.Black,
+                    VisualTreeHelper.GetDpi(tb).PixelsPerDip);
+                // Ширина на экране: TextBlock может стоять в Viewbox, который его уменьшает.
+                var shown = tb.TransformToAncestor(window).TransformBounds(new Rect(0, 0, tb.ActualWidth, tb.ActualHeight)).Width;
+                var needed = tb.TransformToAncestor(window).TransformBounds(new Rect(0, 0, text.Width, 1)).Width;
+                if (needed > shown + 1)
+                    problems.Add($"{state} {window.Width}x{window.Height}: «{tb.Text}» обрезан ({needed:0} > {shown:0})");
+            }
+        }
+        Console.WriteLine($"  {state} {window.Width}x{window.Height}: {buttons.Count} кнопок проверено");
+        return frame;
+    }
+
+    private static string Label(System.Windows.Controls.Button b) =>
+        b.Content as string ?? b.ToolTip as string ?? b.Name;
+
+    private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            yield return child;
+            foreach (var d in Descendants(child)) yield return d;
+        }
     }
 
     /// <summary>Нажатия через команды ViewModel: цифры, операторы и имена функций через пробел.</summary>

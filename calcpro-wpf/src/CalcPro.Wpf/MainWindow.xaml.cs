@@ -13,14 +13,20 @@ namespace CalcPro.Wpf;
 /// <summary>
 /// View code-behind is intentionally thin: it owns only purely-visual concerns
 /// that don't belong in the ViewModel — the result animation, the
-/// scientific-mode column width animation and the theme menu. All calculator
-/// state mutation flows through the bound CalcViewModel commands.
+/// scientific-mode column width animation, the layout for small windows and the
+/// theme menu. All calculator state mutation flows through the bound
+/// CalcViewModel commands.
 /// </summary>
 public partial class MainWindow : Window
 {
     public MainWindow()
     {
         InitializeComponent();
+        // Неявный стиль сетки (MinHeight 24) не действует на клавиши со своим стилем:
+        // AC, C, ⌫, операции, «=» и научные брали MinHeight 42 у GlassButton и в низком
+        // окне не влезали в ряд - ряд срезал их снизу.
+        foreach (var key in KeysGrid.Children.OfType<Button>())
+            key.MinHeight = 24;
         Loaded += OnLoaded;
     }
 
@@ -55,7 +61,80 @@ public partial class MainWindow : Window
     {
         if (DataContext is CalcViewModel vm)
             vm.PropertyChanged += OnViewModelPropertyChanged;
+        ApplyLayout();
     }
+
+    private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e) => ApplyLayout();
+
+    // Окно создаётся в размере по умолчанию, где история рядом.
+    private bool _wasBeside = true;
+    private bool _reopenHistoryWhenWide;
+
+    /// <summary>
+    /// Раскладка под размер окна по правилу WindowLayout: в узком окне история на месте
+    /// клавиатуры (как в калькуляторе Windows), в низком - табло, шапка и отступы меньше.
+    /// </summary>
+    internal void ApplyLayout()
+    {
+        if (ActualWidth <= 0) return; // до первой раскладки ширина ещё 0, это не «узкое окно»
+        var vm = DataContext as CalcViewModel;
+        var beside = ActualWidth >= WindowLayout.HistoryBesideFrom;
+        if (vm is not null && beside != _wasBeside)
+        {
+            var (open, reopen) = WindowLayout.AfterResize(_wasBeside, beside, vm.IsHistoryVisible, _reopenHistoryWhenWide);
+            _wasBeside = beside;
+            _reopenHistoryWhenWide = reopen;
+            // Смена флага сама вызовет ApplyLayout через PropertyChanged.
+            if (open != vm.IsHistoryVisible) { vm.IsHistoryVisible = open; return; }
+        }
+
+        var historyOpen = vm?.IsHistoryVisible == true;
+        var layout = WindowLayout.For(ActualWidth, ActualHeight, historyOpen);
+
+        CalcPanel.Visibility = layout.ShowKeypad ? Visibility.Visible : Visibility.Collapsed;
+        CalcPanel.Margin = layout.HistoryBeside && historyOpen ? new Thickness(0, 0, 7, 0) : new Thickness(0);
+        HistoryPanel.Visibility = layout.ShowHistory ? Visibility.Visible : Visibility.Collapsed;
+        Grid.SetColumn(HistoryPanel, layout.HistoryBeside ? 1 : 0);
+        HistoryPanel.Width = layout.HistoryBeside ? 270 : double.NaN;
+        HistoryPanel.Margin = layout.HistoryBeside ? new Thickness(7, 0, 0, 0) : new Thickness(0);
+        HistoryBackButton.Visibility = layout.HistoryBeside ? Visibility.Collapsed : Visibility.Visible;
+
+        TitleText.Visibility = layout.ShowTitle ? Visibility.Visible : Visibility.Collapsed;
+        CalcInner.Margin = new Thickness(layout.Narrow ? 12 : 18);
+        HeaderGrid.Margin = new Thickness(0, 0, 0, layout.Compact ? 8 : 14);
+        DisplayPanel.Padding = layout.Compact ? new Thickness(14, 8, 14, 8) : new Thickness(18, 16, 18, 16);
+        DisplayText.FontSize = layout.Compact ? 34 : 46;
+        DisplayBox.Height = Math.Ceiling(DisplayText.FontSize * 1.35); // строка шрифта Light
+        MemoryRow.Margin = layout.Compact ? new Thickness(0, 8, 0, 8) : new Thickness(0, 12, 0, 12);
+
+        // Кнопки-«таблетки» в шапке и в ряду памяти: по умолчанию высотой 42, в
+        // низком окне 30; в узком ряду памяти подписи M+ и M- иначе обрезались полями.
+        var pillHeight = layout.Compact ? 30.0 : 42.0;
+        foreach (var pill in new[] { ThemeButton, AngleButton, ModeButton, HistoryBackButton })
+            pill.MinHeight = pillHeight;
+        foreach (var pill in MemoryRow.Children.OfType<Button>())
+        {
+            pill.MinHeight = pillHeight;
+            pill.Padding = layout.Narrow ? new Thickness(2, 4, 2, 4) : new Thickness(10, 4, 10, 4);
+        }
+
+        if ((DataContext as CalcViewModel)?.IsScientific == true)
+        {
+            // Без анимации: ширина научных колонок просто следует за окном.
+            foreach (var col in new[] { SciColA, SciColB })
+            {
+                col.BeginAnimation(ColumnDefinition.WidthProperty, null);
+                col.Width = new GridLength(ScientificColumnWidth());
+            }
+        }
+    }
+
+    /// <summary>
+    /// Научные колонки по 60, но не шире шестой части клавиатуры: в узком окне при 60
+    /// на четыре обычные колонки оставалось по 25 пикселей.
+    /// </summary>
+    private double ScientificColumnWidth() =>
+        KeysGrid.ActualWidth > 0 ? Math.Min(60, Math.Floor(KeysGrid.ActualWidth / 6)) : 60;
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -65,6 +144,9 @@ public partial class MainWindow : Window
             case nameof(CalcViewModel.IsScientific):
                 AnimateScientificColumns(vm.IsScientific);
                 break;
+            case nameof(CalcViewModel.IsHistoryVisible):
+                ApplyLayout();
+                break;
             case nameof(CalcViewModel.ResultAnimationTrigger):
                 PlayResultAnimation();
                 break;
@@ -73,7 +155,7 @@ public partial class MainWindow : Window
 
     private void AnimateScientificColumns(bool show)
     {
-        var target = show ? 60.0 : 0.0;
+        var target = show ? ScientificColumnWidth() : 0.0;
         AnimateColumnWidth(SciColA, target);
         AnimateColumnWidth(SciColB, target);
     }

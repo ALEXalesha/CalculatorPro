@@ -8,7 +8,8 @@
         mc:Ignorable="d"
         Title="Calc Pro"
         Width="780" Height="720"
-        MinWidth="420" MinHeight="620"
+        MinWidth="320" MinHeight="500"
+        SizeChanged="OnWindowSizeChanged"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBaseBg}"
         UseLayoutRounding="True"
@@ -83,15 +84,18 @@
         <!-- ==================== Layer 1: main content ==================== -->
         <Grid Margin="14">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" MinWidth="380" />
+                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!-- ===================== Calculator main panel ===================== -->
-            <ContentControl Grid.Column="0"
+            <!-- Поля, шрифт табло и видимость панелей меняет MainWindow.ApplyLayout
+                 по правилу WindowLayout: минимум окна 320x500, как у калькулятора Windows. -->
+            <ContentControl x:Name="CalcPanel"
+                            Grid.Column="0"
                             Style="{StaticResource GlassPanel}"
                             Margin="0,0,7,0">
-                <Grid Margin="18">
+                <Grid x:Name="CalcInner" Margin="18">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
@@ -100,7 +104,7 @@
                     </Grid.RowDefinitions>
 
                     <!-- ============ Header: mode + angle + memory indicator ============ -->
-                    <Grid Grid.Row="0" Margin="0,0,0,14">
+                    <Grid x:Name="HeaderGrid" Grid.Row="0" Margin="0,0,0,14">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
@@ -108,7 +112,8 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <TextBlock Grid.Column="0"
+                        <TextBlock x:Name="TitleText"
+                                   Grid.Column="0"
                                    Text="Calc Pro"
                                    FontSize="14"
                                    FontWeight="SemiBold"
@@ -137,7 +142,8 @@
                                       Data="M8,1.5 A6.5,6.5 0 1 0 8,14.5 C8.9,14.5 9.3,13.9 9.3,13.3 C9.3,12.5 8.6,12.3 8.6,11.5 C8.6,10.8 9.2,10.3 9.9,10.3 L11.5,10.3 A3.5,3.5 0 0 0 15,6.8 C15,3.9 11.9,1.5 8,1.5 Z M4.8,6.3 A0.9,0.9 0 1 0 4.8,8.1 A0.9,0.9 0 1 0 4.8,6.3 Z M7.3,3.5 A0.9,0.9 0 1 0 7.3,5.3 A0.9,0.9 0 1 0 7.3,3.5 Z M10.7,4.3 A0.9,0.9 0 1 0 10.7,6.1 A0.9,0.9 0 1 0 10.7,4.3 Z" />
                             </Button>
 
-                            <Button Style="{StaticResource PillButton}"
+                            <Button x:Name="AngleButton"
+                                    Style="{StaticResource PillButton}"
                                     Command="{Binding ToggleAngleModeCommand}"
                                     Width="50" Margin="0,0,4,0">
                                 <TextBlock>
@@ -155,7 +161,8 @@
                             </Button>
                         </StackPanel>
 
-                        <Button Grid.Column="3"
+                        <Button x:Name="ModeButton"
+                                Grid.Column="3"
                                 Style="{StaticResource PillButton}"
                                 Command="{Binding ToggleModeCommand}"
                                 Width="86">
@@ -175,7 +182,8 @@
                     </Grid>
 
                     <!-- ============ Display panel ============ -->
-                    <ContentControl Grid.Row="1"
+                    <ContentControl x:Name="DisplayPanel"
+                                    Grid.Row="1"
                                     Style="{StaticResource GlassPanelSoft}"
                                     Padding="18,16">
                         <Grid>
@@ -190,24 +198,31 @@
                                        TextAlignment="Right"
                                        TextTrimming="CharacterEllipsis"
                                        MinHeight="20" />
-                            <TextBlock x:Name="DisplayText"
-                                       Grid.Row="1"
-                                       Text="{Binding Display}"
-                                       FontSize="46"
-                                       FontWeight="Light"
-                                       Foreground="{DynamicResource TextBrush}"
-                                       TextAlignment="Right"
-                                       TextTrimming="CharacterEllipsis"
-                                       Margin="0,6,0,0">
-                                <TextBlock.RenderTransform>
-                                    <TranslateTransform x:Name="DisplayTranslate" Y="0" />
-                                </TextBlock.RenderTransform>
-                            </TextBlock>
+                            <!-- Длинное число уменьшается, а не обрезается многоточием: в узком
+                                 окне от 146623988754610578 оставалось «14662398875…». Высота
+                                 постоянная (ApplyLayout), чтобы табло не прыгало. -->
+                            <Viewbox x:Name="DisplayBox"
+                                     Grid.Row="1"
+                                     Height="62"
+                                     StretchDirection="DownOnly"
+                                     HorizontalAlignment="Right"
+                                     Margin="0,6,0,0">
+                                <TextBlock x:Name="DisplayText"
+                                           Text="{Binding Display}"
+                                           FontSize="46"
+                                           FontWeight="Light"
+                                           Foreground="{DynamicResource TextBrush}"
+                                           TextAlignment="Right">
+                                    <TextBlock.RenderTransform>
+                                        <TranslateTransform x:Name="DisplayTranslate" Y="0" />
+                                    </TextBlock.RenderTransform>
+                                </TextBlock>
+                            </Viewbox>
                         </Grid>
                     </ContentControl>
 
                     <!-- ============ Memory + history buttons row ============ -->
-                    <UniformGrid Grid.Row="2" Rows="1" Columns="6" Margin="0,12,0,12">
+                    <UniformGrid x:Name="MemoryRow" Grid.Row="2" Rows="1" Columns="6" Margin="0,12,0,12">
                         <Button Style="{StaticResource PillButton}"
                                 Command="{Binding PressMemoryCommand}" CommandParameter="MC"
                                 Content="MC" Margin="3,0" />
@@ -223,13 +238,19 @@
                         <Button Style="{StaticResource PillButton}"
                                 Command="{Binding PressMemoryCommand}" CommandParameter="MS"
                                 Content="MS" Margin="3,0" />
-                        <Button Style="{StaticResource PillButton}"
+                        <!-- Значок вместо слова History: в узком окне шесть подписей не помещаются. -->
+                        <Button x:Name="HistoryButton"
+                                Style="{StaticResource PillButton}"
                                 Command="{Binding ToggleHistoryCommand}"
-                                Content="History" Margin="3,0" />
+                                ToolTip="History (Ctrl+H)" Margin="3,0">
+                            <Path Width="15" Height="15" Stretch="Uniform"
+                                  Stroke="{DynamicResource TextBrush}" StrokeThickness="1.4"
+                                  Data="M8,1.5 A6.5,6.5 0 1 1 7.99,1.5 Z M8,4.2 L8,8 L10.6,9.6" />
+                        </Button>
                     </UniformGrid>
 
                     <!-- ============ Button grid ============ -->
-                    <Grid Grid.Row="3">
+                    <Grid x:Name="KeysGrid" Grid.Row="3">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
@@ -354,11 +375,14 @@
             </ContentControl>
 
             <!-- ===================== History panel ===================== -->
-            <ContentControl Grid.Column="1"
+            <!-- Видимость, колонку и ширину ставит ApplyLayout: в узком окне история
+                 открывается вместо клавиатуры, как в калькуляторе Windows. -->
+            <ContentControl x:Name="HistoryPanel"
+                            Grid.Column="1"
                             Style="{StaticResource GlassPanel}"
                             Width="270"
                             Margin="7,0,0,0"
-                            Visibility="{Binding IsHistoryVisible, Converter={StaticResource BoolToVis}}">
+                            Visibility="Collapsed">
                 <Grid Margin="14">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -368,15 +392,24 @@
 
                     <Grid Grid.Row="0" Margin="0,0,0,10">
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Text="History"
+                        <!-- Назад к клавиатуре: только в узком окне, где история на её месте. -->
+                        <Button x:Name="HistoryBackButton"
+                                Style="{StaticResource PillButton}"
+                                Command="{Binding ToggleHistoryCommand}"
+                                ToolTip="Back to the keypad"
+                                Content="‹" FontSize="20" Width="40" Margin="0,0,8,0"
+                                Visibility="Collapsed" />
+                        <TextBlock Grid.Column="1"
+                                   Text="History"
                                    FontSize="14"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextBrush}"
                                    VerticalAlignment="Center" />
-                        <Button Grid.Column="1"
+                        <Button Grid.Column="2"
                                 Style="{StaticResource PillButton}"
                                 Command="{Binding ClearHistoryCommand}"
                                 Content="Clear" Width="60" />
@@ -402,6 +435,7 @@
                                                        FontWeight="SemiBold"
                                                        Foreground="{DynamicResource TextBrush}"
                                                        TextAlignment="Right"
+                                                       TextWrapping="Wrap"
                                                        Margin="0,2,0,0" />
                                         </StackPanel>
                                     </Button>
