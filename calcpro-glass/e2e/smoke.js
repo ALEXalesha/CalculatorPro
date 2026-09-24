@@ -67,6 +67,46 @@ app.whenReady().then(async () => {
   fs.writeFileSync(out, (await win.webContents.capturePage()).toPNG());
   console.log('screenshot:', out);
 
+  // Минимальное окно (main.js: 280x500, меньше калькулятора Windows 320x500): в каждом
+  // режиме каждая видимая кнопка целиком в окне, не ниже 20 px и с подписью, которая
+  // в неё влезает.
+  const MIN = { w: 280, h: 500 };
+  check('main.js minimum is 280x500', /minWidth:\s*280,\s*\n\s*minHeight:\s*500,/.test(fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')), true);
+  win.setSize(MIN.w, MIN.h);
+  await new Promise(r => setTimeout(r, 400));
+  const fits = (sel) => js(`(() => {
+    const bad = [];
+    for (const b of document.querySelectorAll(${JSON.stringify(sel)})) {
+      if (!b.offsetParent) continue;
+      const r = b.getBoundingClientRect();
+      const name = (b.textContent.trim() || b.id || b.className).slice(0, 12);
+      if (r.left < 0 || r.top < 0 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) bad.push(name + ' outside');
+      else if (r.height < 20) bad.push(name + ' ' + Math.round(r.height) + 'px');
+      else if (b.scrollWidth > b.clientWidth + 1) bad.push(name + ' label clipped');
+    }
+    return bad.join(', ') || 'ok';
+  })()`);
+  const glassKeys = '#calcKeys button, .mode-tab, .angle-pill, .mem-btn, .win-controls button';
+  for (const [tab, name] of [['#tabStandard', 'standard'], ['#tabScientific', 'scientific'], ['#tabFraction', 'fraction']]) {
+    await click(tab);
+    await new Promise(r => setTimeout(r, 350));
+    check(`${name} at 280x500: every key fits`, await fits(glassKeys), 'ok');
+  }
+  // Длинный пример в истории узкого окна переносится целиком, а не обрезается «…».
+  await click('#tabStandard');
+  await keys(['AC', ...'123456789', '×', ...'987654321', '+', ...'111111111', '×', ...'222222222', '=']);
+  await click('#btnHistory');
+  await new Promise(r => setTimeout(r, 350));
+  const longItem = await js(`(() => {
+    const e = [...document.querySelectorAll('#historyList .history-item-expr')].find(x => x.textContent.length > 30);
+    return { text: e.textContent.replace(/​/g, ''), fits: e.scrollWidth <= e.clientWidth + 1 };
+  })()`);
+  check('long example in history is whole', longItem.text, '123456789×987654321+111111111×222222222');
+  check('long example in history is not clipped', longItem.fits, true);
+  await click('#btnHistory');
+  win.setSize(360, 700);
+  await new Promise(r => setTimeout(r, 300));
+
   // Темы Paint Pro: меню, смена цветов, память о выборе, Escape закрывает список.
   const css = v => js(`getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(v)}).trim()`);
   check('glass theme by default', await js('document.documentElement.getAttribute("data-theme")'), null);

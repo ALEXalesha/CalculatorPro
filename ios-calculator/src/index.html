@@ -330,15 +330,17 @@
   }
   .history-item:hover { background: rgb(var(--ink) / 0.06); }
   .history-item:active { background: rgb(var(--ink) / 0.12); }
+  /* Длинные числа переносятся, а не уезжают за край: полосы прокрутки здесь не
+     видно, и о спрятанном конце числа было не догадаться. */
   .history-item .h-expr {
     font-size: 14px; opacity: 0.55;
-    max-width: 100%; overflow-x: auto; white-space: nowrap;
+    max-width: 100%; white-space: normal; overflow-wrap: anywhere;
     text-align: right;
   }
   .history-item .h-result {
     font-size: 26px; font-weight: 300;
     letter-spacing: -0.5px;
-    max-width: 100%; overflow-x: auto; white-space: nowrap;
+    max-width: 100%; white-space: normal; overflow-wrap: anywhere;
     text-align: right;
   }
   .history-item .h-expr::-webkit-scrollbar,

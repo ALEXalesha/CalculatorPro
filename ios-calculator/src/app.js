@@ -37,7 +37,12 @@
     const sideKeypadPad = 20;
     const headerH = 38;
     const sciToggleH = 32 + 6;
-    const MIN_DISPLAY = isSci ? MIN_DISPLAY_SCI : MIN_DISPLAY_BASIC;
+    // The display gives up height first when the window is low (minimum 280x500):
+    // full size from 640px up, then down to 80 / 56px.
+    const clamp = (lo, v, hi) => Math.max(lo, Math.min(v, hi));
+    const MIN_DISPLAY = isSci
+      ? clamp(56, totalH - 530, MIN_DISPLAY_SCI)
+      : clamp(80, totalH - 500, MIN_DISPLAY_BASIC);
 
     const cellByWidth = Math.floor((totalW - padX - sideKeypadPad - 3 * gap) / 4);
     // The sci pad spans exactly the keypad width: 5*sciCell + 4*sciGap == 4*cell + 3*gap
@@ -51,7 +56,7 @@
       : Math.floor((remainingH - 40) / 5);
 
     const cellW = Math.max(34, cellByWidth);
-    const cell = Math.min(cellW, Math.max(34, cellByHeight));
+    const cell = Math.min(cellW, Math.max(22, cellByHeight));
     // Without floor: five columns rounded down came out 4px narrower than the keypad.
     const sciCellW = (4 * cellW + 3 * gap - 4 * sciGap) / 5;
     const sciCell = Math.min(sciCellW, sciCellFromCell(cell));

@@ -99,6 +99,41 @@ app.whenReady().then(async () => {
   check('basic 320x640: keys stay round', await js(`(() => { const r = document.querySelector('.keypad .btn').getBoundingClientRect(); return Math.round(r.width) === Math.round(r.height); })()`), true);
   check('basic 320x640: keypad margins at most 24px', Math.max(...Object.values(await span('.keypad .btn')).slice(0, 2)) <= 24, true);
 
+  // Минимальное окно (main.js: 280x500, меньше калькулятора Windows 320x500): в каждом
+  // режиме каждая видимая кнопка целиком в окне, не ниже 20 px и с подписью, которая
+  // в неё влезает.
+  const MIN = { w: 280, h: 500 };
+  check('main.js minimum is 280x500', /minWidth:\s*280,\s*\n\s*minHeight:\s*500,/.test(fs.readFileSync(path.join(ROOT, 'main.js'), 'utf8')), true);
+  win.setSize(MIN.w, MIN.h);
+  await new Promise(r => setTimeout(r, 400));
+  const fits = (sel) => js(`(() => {
+    const bad = [];
+    for (const b of document.querySelectorAll(${JSON.stringify(sel)})) {
+      if (!b.offsetParent) continue;
+      const r = b.getBoundingClientRect();
+      const name = (b.textContent.trim() || b.id || b.className).slice(0, 12);
+      if (r.left < 0 || r.top < 0 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5) bad.push(name + ' outside');
+      else if (r.height < 20) bad.push(name + ' ' + Math.round(r.height) + 'px');
+      else if (b.scrollWidth > b.clientWidth + 1) bad.push(name + ' label clipped');
+    }
+    return bad.join(', ') || 'ok';
+  })()`);
+  const iosKeys = '.btn, .win-btn, #menuBtn, #sciToggle';
+  check('basic at 280x500: every key fits', await fits(iosKeys), 'ok');
+  await click('#sciToggle');
+  await new Promise(r => setTimeout(r, 400));
+  check('scientific at 280x500: every key fits', await fits(iosKeys), 'ok');
+  await click('#sciToggle');
+  // Длинные числа в истории узкого окна переносятся, а не уезжают за край.
+  await act('clear'); await act('clear');
+  await num('1234567890123456'); await op('*'); await num('9876543210987654'); await op('=');
+  await click('#menuBtn');
+  await click('.menu-item[data-action="history"]');
+  await new Promise(r => setTimeout(r, 400));
+  check('long numbers in history are not clipped', await js(`[...document.querySelectorAll('#historyList .h-expr, #historyList .h-result')].every(e => e.scrollWidth <= e.clientWidth + 1)`), true);
+  check('long numbers in history are whole', await js('document.querySelector("#historyList .h-expr").textContent'), '1234567890123456 × 9876543210987654 =');
+  await click('#historyBack');
+
   // Темы Paint Pro в меню «•••»: смена цветов и память о выборе.
   const css = v => js(`getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(v)}).trim()`);
   check('glass theme by default', await js('document.documentElement.getAttribute("data-theme")'), null);
