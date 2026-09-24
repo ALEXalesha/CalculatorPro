@@ -30,6 +30,10 @@ internal static class Program
         // окно не соберётся. Run() не вызывается: цикл сообщений крутим сами.
         var app = new App();
         app.InitializeComponent();
+        // Размер окна человека не читается и не пишется: кадры всегда в размере по умолчанию.
+        CalcPro.Wpf.Services.WindowPlacementService.FilePath = null;
+        // И тема по умолчанию, а не та, что выбрана у человека: однажды кадр вышел в «Ночной».
+        CalcPro.Wpf.Services.ThemeService.Apply(CalcPro.Core.Services.ThemeCatalog.DefaultId);
 
         var window = new MainWindow
         {
@@ -103,7 +107,9 @@ internal static class Program
         {
             var r = b.TransformToAncestor(content).TransformBounds(new Rect(0, 0, b.ActualWidth, b.ActualHeight));
             var name = $"{state} {window.Width}x{window.Height}: «{Label(b)}»";
-            if (!bounds.Contains(r)) problems.Add($"{name} выходит за окно ({r})");
+            // Запись истории в прокручиваемом списке может уходить за край - её прокрутят.
+            var scrolled = Ancestors(b).OfType<System.Windows.Controls.ScrollViewer>().Any();
+            if (!scrolled && !bounds.Contains(r)) problems.Add($"{name} выходит за окно ({r})");
             if (r.Width < 20 || r.Height < 20) problems.Add($"{name} {r.Width:0}x{r.Height:0} - мельче 20 пикселей");
             // Кнопка может стоять в окне, но не влезать в свою ячейку сетки: тогда ячейка
             // её обрезает. Так было с AC, ÷ и научными клавишами - у их стилей MinHeight 42.
@@ -139,6 +145,12 @@ internal static class Program
 
     private static string Label(System.Windows.Controls.Button b) =>
         b.Content as string ?? b.ToolTip as string ?? b.Name;
+
+    private static IEnumerable<DependencyObject> Ancestors(DependencyObject node)
+    {
+        for (var p = VisualTreeHelper.GetParent(node); p is not null; p = VisualTreeHelper.GetParent(p))
+            yield return p;
+    }
 
     private static IEnumerable<DependencyObject> Descendants(DependencyObject root)
     {

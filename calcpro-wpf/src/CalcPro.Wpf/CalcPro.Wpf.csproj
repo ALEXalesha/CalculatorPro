@@ -12,7 +12,7 @@
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>
     <UseLayoutRounding>true</UseLayoutRounding>
 
-    <Version>1.4.0</Version>
+    <Version>1.5.0</Version>
     <Product>Calc Pro</Product>
     <Company>ALEXalesha</Company>
     <Copyright>Copyright (c) 2026 ALEXalesha</Copyright>
@@ -41,6 +41,11 @@
 
   <ItemGroup>
     <None Remove="Resources\make-icon.py" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Значок в своём заголовке окна (MainWindow). -->
+    <Resource Include="Resources\app.png" />
   </ItemGroup>
 
 </Project>

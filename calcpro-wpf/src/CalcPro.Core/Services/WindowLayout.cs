@@ -22,8 +22,8 @@ public static class WindowLayout
     /// </summary>
     public const double HistoryBesideFrom = 720;
 
-    /// <summary>Уже этого в шапке не остаётся места для названия «Calc Pro».</summary>
-    public const double TitleFrom = 420;
+    /// <summary>Уже этого окно узкое: поля меньше, кнопки памяти плотнее.</summary>
+    public const double NarrowBelow = 420;
 
     /// <summary>Ниже этого табло, шапка и отступы ужимаются, чтобы семи рядам клавиш хватило высоты.</summary>
     public const double CompactBelow = 640;
@@ -32,7 +32,7 @@ public static class WindowLayout
     /// <param name="HistoryBeside">История - колонкой справа (иначе вместо клавиатуры).</param>
     /// <param name="Narrow">Узкое окно: поля меньше, кнопки памяти плотнее.</param>
     /// <param name="Compact">Низкое окно: табло и отступы меньше.</param>
-    public sealed record Layout(bool HistoryBeside, bool Narrow, bool ShowTitle, bool Compact, bool ShowKeypad, bool ShowHistory);
+    public sealed record Layout(bool HistoryBeside, bool Narrow, bool Compact, bool ShowKeypad, bool ShowHistory);
 
     /// <summary>
     /// Раскладка для окна <paramref name="width"/> x <paramref name="height"/> (внешний
@@ -46,8 +46,7 @@ public static class WindowLayout
         var beside = width >= HistoryBesideFrom;
         return new Layout(
             HistoryBeside: beside,
-            Narrow: width < TitleFrom,
-            ShowTitle: width >= TitleFrom,
+            Narrow: width < NarrowBelow,
             Compact: height < CompactBelow,
             ShowKeypad: beside || !historyOpen,
             ShowHistory: historyOpen);

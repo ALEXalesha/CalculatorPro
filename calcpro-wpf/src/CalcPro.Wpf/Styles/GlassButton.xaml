@@ -43,8 +43,11 @@
                                 Background="{DynamicResource PanelSpecular}"
                                 IsHitTestVisible="False" />
 
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
+                        <!-- Выравнивание из HorizontalContentAlignment (по умолчанию Center, см.
+                             сеттер выше): запись истории растягивает содержимое на всю ширину,
+                             и её числа стоят по правой стенке, а не по центру кнопки. -->
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                           TextElement.Foreground="{TemplateBinding Foreground}"
                                           TextElement.FontSize="{TemplateBinding FontSize}"
                                           TextElement.FontWeight="{TemplateBinding FontWeight}" />
