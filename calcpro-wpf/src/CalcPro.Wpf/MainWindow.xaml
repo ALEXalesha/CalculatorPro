@@ -29,6 +29,35 @@
     <Window.Resources>
         <converters:BoolToVisConverter x:Key="BoolToVis" />
         <converters:InvBoolToVisConverter x:Key="InvBoolToVis" />
+        <converters:InvBoolConverter x:Key="InvBool" />
+
+        <!-- Строка системы счисления в «Программисте»: подпись слева, число справа;
+             выбранная система подсвечена. Щелчок - вводить в этой системе. -->
+        <Style x:Key="BaseRow" TargetType="ToggleButton">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="MinHeight" Value="24" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Bd" CornerRadius="8" Padding="10,1" Background="Transparent"
+                                BorderBrush="Transparent" BorderThickness="1">
+                            <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GlassBgSoft}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource GlassBgStrong}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <converters:PrettyExpressionConverter x:Key="PrettyExpression" />
 
         <!-- Кнопки окна в цвет темы, как в Calc Pro Glass: системная полоса заголовка со
@@ -104,6 +133,13 @@
         <KeyBinding Key="Multiply" Command="{Binding PressOperatorCommand}" CommandParameter="*" />
         <KeyBinding Key="Divide" Command="{Binding PressOperatorCommand}" CommandParameter="/" />
 
+        <KeyBinding Key="A" Command="{Binding PressDigitCommand}" CommandParameter="A" />
+        <KeyBinding Key="B" Command="{Binding PressDigitCommand}" CommandParameter="B" />
+        <KeyBinding Key="C" Command="{Binding PressDigitCommand}" CommandParameter="C" />
+        <KeyBinding Key="D" Command="{Binding PressDigitCommand}" CommandParameter="D" />
+        <KeyBinding Key="E" Command="{Binding PressDigitCommand}" CommandParameter="E" />
+        <KeyBinding Key="F" Command="{Binding PressDigitCommand}" CommandParameter="F" />
+
         <KeyBinding Key="Enter" Command="{Binding PressEqualsCommand}" />
         <KeyBinding Key="Return" Command="{Binding PressEqualsCommand}" />
 
@@ -175,6 +211,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
@@ -213,6 +250,7 @@
                             <Button x:Name="AngleButton"
                                     Style="{StaticResource PillButton}"
                                     Command="{Binding ToggleAngleModeCommand}"
+                                    Visibility="{Binding IsProgrammer, Converter={StaticResource InvBoolToVis}}"
                                     Width="50" Margin="0,0,4,0">
                                 <TextBlock>
                                     <TextBlock.Style>
@@ -229,23 +267,18 @@
                             </Button>
                         </StackPanel>
 
+                        <!-- Режим - меню из трёх пунктов: Standard, Scientific, Programmer (1.6.0).
+                             Меню собирает code-behind (OnModeButtonClick), как у тем. -->
                         <Button x:Name="ModeButton"
                                 Grid.Column="3"
                                 Style="{StaticResource PillButton}"
-                                Command="{Binding ToggleModeCommand}"
-                                Width="86">
-                            <TextBlock>
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Text" Value="Standard" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsScientific}" Value="True">
-                                                <Setter Property="Text" Value="Scientific" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                Click="OnModeButtonClick"
+                                ToolTip="Режим"
+                                MinWidth="86">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding ModeName}" />
+                                <TextBlock Text=" ▾" Opacity="0.7" />
+                            </StackPanel>
                         </Button>
                     </Grid>
 
@@ -290,7 +323,10 @@
                     </ContentControl>
 
                     <!-- ============ Memory + history buttons row ============ -->
-                    <UniformGrid x:Name="MemoryRow" Grid.Row="2" Rows="1" Columns="6" Margin="0,12,0,12">
+                    <!-- В «Программисте» ряда памяти нет: память у обычных чисел, а место нужно строкам
+                         систем счисления. История открывается и там - Ctrl+H. -->
+                    <UniformGrid x:Name="MemoryRow" Grid.Row="2" Rows="1" Columns="6" Margin="0,12,0,12"
+                                 Visibility="{Binding IsProgrammer, Converter={StaticResource InvBoolToVis}}">
                         <Button Style="{StaticResource PillButton}"
                                 Command="{Binding PressMemoryCommand}" CommandParameter="MC"
                                 Content="MC" Margin="3,0" />
@@ -317,8 +353,54 @@
                         </Button>
                     </UniformGrid>
 
+                    <!-- ============ «Программист»: число во всех четырёх системах ============ -->
+                    <StackPanel x:Name="BaseRows" Grid.Row="3" Margin="0,10,0,8"
+                                Visibility="{Binding IsProgrammer, Converter={StaticResource BoolToVis}}">
+                        <ToggleButton Style="{StaticResource BaseRow}" IsChecked="{Binding BaseIsHex, Mode=OneWay}"
+                                      Command="{Binding PressProgCommand}" CommandParameter="HEX">
+                            <DockPanel>
+                                <TextBlock Text="HEX" Width="38" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextDimBrush}" VerticalAlignment="Center" />
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right" Height="16">
+                                    <TextBlock Text="{Binding ProgHex}" FontSize="14" />
+                                </Viewbox>
+                            </DockPanel>
+                        </ToggleButton>
+                        <ToggleButton Style="{StaticResource BaseRow}" IsChecked="{Binding BaseIsDec, Mode=OneWay}"
+                                      Command="{Binding PressProgCommand}" CommandParameter="DEC">
+                            <DockPanel>
+                                <TextBlock Text="DEC" Width="38" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextDimBrush}" VerticalAlignment="Center" />
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right" Height="16">
+                                    <TextBlock Text="{Binding ProgDec}" FontSize="14" />
+                                </Viewbox>
+                            </DockPanel>
+                        </ToggleButton>
+                        <ToggleButton Style="{StaticResource BaseRow}" IsChecked="{Binding BaseIsOct, Mode=OneWay}"
+                                      Command="{Binding PressProgCommand}" CommandParameter="OCT">
+                            <DockPanel>
+                                <TextBlock Text="OCT" Width="38" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextDimBrush}" VerticalAlignment="Center" />
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right" Height="16">
+                                    <TextBlock Text="{Binding ProgOct}" FontSize="14" />
+                                </Viewbox>
+                            </DockPanel>
+                        </ToggleButton>
+                        <ToggleButton Style="{StaticResource BaseRow}" IsChecked="{Binding BaseIsBin, Mode=OneWay}"
+                                      Command="{Binding PressProgCommand}" CommandParameter="BIN">
+                            <DockPanel>
+                                <TextBlock Text="BIN" Width="38" FontSize="12" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextDimBrush}" VerticalAlignment="Center" />
+                                <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Right" Height="16">
+                                    <TextBlock Text="{Binding ProgBin}" FontSize="14" />
+                                </Viewbox>
+                            </DockPanel>
+                        </ToggleButton>
+                    </StackPanel>
+
                     <!-- ============ Button grid ============ -->
-                    <Grid x:Name="KeysGrid" Grid.Row="3">
+                    <Grid x:Name="KeysGrid" Grid.Row="4"
+                          Visibility="{Binding IsProgrammer, Converter={StaticResource InvBoolToVis}}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
@@ -438,6 +520,103 @@
                                 Command="{Binding PressOperatorCommand}" CommandParameter="^" Content="x^y" />
                         <Button Grid.Row="6" Grid.Column="4"
                                 Command="{Binding PressFunctionCommand}" CommandParameter="sqrt" Content="√" />
+                    </Grid>
+
+                    <!-- ============ Клавиатура «Программиста» (1.6.0) ============
+                         Цифр, которых в выбранной системе нет, нажать нельзя: A-F только в
+                         HEX, 8 и 9 - от DEC, 2-7 - от OCT. -->
+                    <Grid x:Name="ProgKeysGrid" Grid.Row="4"
+                          Visibility="{Binding IsProgrammer, Converter={StaticResource BoolToVis}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.Resources>
+                            <Style TargetType="Button" BasedOn="{StaticResource GlassButton}">
+                                <Setter Property="Margin" Value="4" />
+                                <Setter Property="MinHeight" Value="24" />
+                            </Style>
+                        </Grid.Resources>
+                        <Button Grid.Row="0" Grid.Column="0" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="AND" Content="AND" />
+                        <Button Grid.Row="0" Grid.Column="1" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="OR" Content="OR" />
+                        <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="XOR" Content="XOR" />
+                        <Button Grid.Row="0" Grid.Column="3" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="NOT" Content="NOT" />
+                        <Button Grid.Row="0" Grid.Column="4" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="Mod" Content="Mod" />
+                        <Button Grid.Row="1" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="A" Content="A" />
+                        <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="&lt;&lt;" Content="&lt;&lt;" />
+                        <Button Grid.Row="1" Grid.Column="2" Style="{StaticResource FunctionButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="&gt;&gt;" Content="&gt;&gt;" />
+                        <Button Grid.Row="1" Grid.Column="3" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="AC" Content="AC" />
+                        <Button Grid.Row="1" Grid.Column="4" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="⌫" Content="⌫" />
+                        <Button Grid.Row="2" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="B" Content="B" />
+                        <Button Grid.Row="2" Grid.Column="1"
+                                Command="{Binding PressProgCommand}" CommandParameter="(" Content="(" />
+                        <Button Grid.Row="2" Grid.Column="2"
+                                Command="{Binding PressProgCommand}" CommandParameter=")" Content=")" />
+                        <Button Grid.Row="2" Grid.Column="3"
+                                Command="{Binding PressProgCommand}" CommandParameter="±" Content="±" />
+                        <Button Grid.Row="2" Grid.Column="4" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="÷" Content="÷" />
+                        <Button Grid.Row="3" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="C" Content="C" />
+                        <Button Grid.Row="3" Grid.Column="1" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="7" Content="7" />
+                        <Button Grid.Row="3" Grid.Column="2" IsEnabled="{Binding AllowsDecDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="8" Content="8" />
+                        <Button Grid.Row="3" Grid.Column="3" IsEnabled="{Binding AllowsDecDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="9" Content="9" />
+                        <Button Grid.Row="3" Grid.Column="4" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="×" Content="×" />
+                        <Button Grid.Row="4" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="D" Content="D" />
+                        <Button Grid.Row="4" Grid.Column="1" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="4" Content="4" />
+                        <Button Grid.Row="4" Grid.Column="2" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="5" Content="5" />
+                        <Button Grid.Row="4" Grid.Column="3" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="6" Content="6" />
+                        <Button Grid.Row="4" Grid.Column="4" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="−" Content="−" />
+                        <Button Grid.Row="5" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="E" Content="E" />
+                        <Button Grid.Row="5" Grid.Column="1"
+                                Command="{Binding PressProgCommand}" CommandParameter="1" Content="1" />
+                        <Button Grid.Row="5" Grid.Column="2" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="2" Content="2" />
+                        <Button Grid.Row="5" Grid.Column="3" IsEnabled="{Binding AllowsOctDigits}"
+                                Command="{Binding PressProgCommand}" CommandParameter="3" Content="3" />
+                        <Button Grid.Row="5" Grid.Column="4" Style="{StaticResource OperatorButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="+" Content="+" />
+                        <Button Grid.Row="6" Grid.Column="0" IsEnabled="{Binding BaseIsHex}"
+                                Command="{Binding PressProgCommand}" CommandParameter="F" Content="F" />
+                        <Button Grid.Row="6" Grid.Column="1" Style="{StaticResource DangerButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="CE" Content="CE" />
+                        <Button Grid.Row="6" Grid.Column="2"
+                                Command="{Binding PressProgCommand}" CommandParameter="0" Content="0" />
+                        <Button Grid.Row="6" Grid.Column="3" Grid.ColumnSpan="2" Style="{StaticResource PrimaryButton}"
+                                Command="{Binding PressProgCommand}" CommandParameter="=" Content="=" />
                     </Grid>
                 </Grid>
             </ContentControl>

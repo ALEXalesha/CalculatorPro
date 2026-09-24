@@ -56,7 +56,27 @@ app.whenReady().then(async () => {
   await keys(['a/b', '1', 'a/b', '2', '+', 'a/b', '1', 'a/b', '3', '=']);
   check('1/2+1/3 as fraction', await js('document.querySelector("#mainResult .frac-num").textContent + "/" + document.querySelector("#mainResult .frac-den").textContent'), '5/6');
 
+  // «Программист» (1.6.0): набор в HEX, битовые операции, строки систем, клавиатура.
+  await click('#tabProgrammer');
+  check('programmer keypad rendered', await js('document.querySelectorAll("#calcKeys [data-key]").length'), 34);
+  check('A-F disabled in DEC', await js('document.querySelector("[data-key=A]").disabled'), true);
+  await click('.base-row[data-base=HEX]');
+  check('A-F enabled in HEX', await js('document.querySelector("[data-key=A]").disabled'), false);
+  await keys(['F', 'F', 'AND', '3', 'C', '=']);
+  check('FF AND 3C = 3C', await text('#mainResult'), '3C');
+  check('expression in hex', await text('#historyLine'), 'FF AND 3C =');
+  check('DEC row', await text('.base-row[data-base=DEC] .base-value'), '60');
+  check('BIN row', await text('.base-row[data-base=BIN] .base-value'), '11 1100');
+  await click('.base-row[data-base=BIN]');
+  check('8 disabled in BIN', await js('document.querySelector("[data-key=\\"8\\"]").disabled'), true);
+  // С клавиатуры: буквы и знаки. В BIN двойка не вводится.
+  win.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Escape' });
+  for (const k of ['1', '2', '0', '1']) win.webContents.sendInputEvent({ type: 'keyDown', keyCode: k });
+  await new Promise(r => setTimeout(r, 150));
+  check('typed 1,2,0,1 in BIN', await text('#mainResult'), '101');
   await click('#tabStandard');
+  // У обычного режима своё число: «Программист» его не трогает (последний был −2^2).
+  check('standard keeps its own number', await text('#mainResult'), '-4');
   await click('#btnHistory');
   check('history panel lists results', await js('document.querySelectorAll("#historyList .history-item").length'), 4);
 
@@ -86,8 +106,8 @@ app.whenReady().then(async () => {
     }
     return bad.join(', ') || 'ok';
   })()`);
-  const glassKeys = '#calcKeys button, .mode-tab, .angle-pill, .mem-btn, .win-controls button';
-  for (const [tab, name] of [['#tabStandard', 'standard'], ['#tabScientific', 'scientific'], ['#tabFraction', 'fraction']]) {
+  const glassKeys = '#calcKeys button, .mode-tab, .angle-pill, .mem-btn, .win-controls button, .base-row';
+  for (const [tab, name] of [['#tabStandard', 'standard'], ['#tabScientific', 'scientific'], ['#tabFraction', 'fraction'], ['#tabProgrammer', 'programmer']]) {
     await click(tab);
     await new Promise(r => setTimeout(r, 350));
     check(`${name} at 280x500: every key fits`, await fits(glassKeys), 'ok');

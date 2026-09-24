@@ -11,6 +11,10 @@
     renderFractionStack, renderFractionExpr, fractionExprText,
   } = window.CalcCore;
 
+  // «Программист» (1.6.0): своё ядро, своё состояние - обычное при переходе не теряется.
+  const P = window.ProgrammerCore;
+  const prog = P.createProgrammer();
+
   const $ = id => document.getElementById(id);
   const DOM = {
     display: $('calcDisplay'),
@@ -27,6 +31,8 @@
     tabStd: $('tabStandard'),
     tabSci: $('tabScientific'),
     tabFrac: $('tabFraction'),
+    tabProg: $('tabProgrammer'),
+    baseRows: $('baseRows'),
     anglePill: $('anglePill'),
     btnMinimize: $('btnMinimize'),
     btnClose: $('btnClose'),
@@ -66,6 +72,7 @@
       case 'eq': return 'btn btn-eq';
       case 'sci': return 'btn btn-sci';
       case 'frac': return 'btn btn-sci btn-frac';
+      case 'hex': return 'btn btn-digit btn-hex';
       default: return 'btn';
     }
   }
@@ -74,12 +81,14 @@
     let layout = STD_LAYOUT;
     if (state.mode === 'scientific') layout = SCI_LAYOUT;
     else if (state.mode === 'fractions') layout = FRAC_LAYOUT;
+    else if (state.mode === 'programmer') layout = P.PROG_LAYOUT;
     DOM.calcKeys.classList.toggle('scientific', state.mode === 'scientific');
     DOM.calcKeys.classList.toggle('fractions', state.mode === 'fractions');
+    DOM.calcKeys.classList.toggle('programmer', state.mode === 'programmer');
     DOM.calcKeys.innerHTML = '';
     for (const item of layout) {
       const b = document.createElement('button');
-      b.className = classFor(item.t);
+      b.className = classFor(item.t) + (item.span === 2 ? ' span-2' : '');
       b.dataset.key = item.k;
       b.dataset.original = item.k;
       b.textContent = item.k;
@@ -91,6 +100,50 @@
     }
     applyAltSet();
     syncAngleMode();
+    syncProgrammerKeys();
+  }
+
+  // Цифры, которых в выбранной системе нет, нажать нельзя: A-F только в HEX, 8 и 9 -
+  // от DEC, 2-7 - от OCT.
+  function syncProgrammerKeys() {
+    if (state.mode !== 'programmer') return;
+    DOM.calcKeys.querySelectorAll('[data-key]').forEach(b => {
+      const d = P.digitValue(b.dataset.key);
+      b.disabled = d >= 0 && d >= prog.state.base;
+    });
+  }
+
+  function renderBaseRows() {
+    const all = prog.all();
+    const names = Object.keys(P.BASES);
+    if (!DOM.baseRows.children.length) {
+      for (const name of names) {
+        const row = document.createElement('button');
+        row.type = 'button';
+        row.className = 'base-row';
+        row.dataset.base = name;
+        row.innerHTML = '<span class="base-name"></span><span class="base-value"></span>';
+        row.querySelector('.base-name').textContent = name;
+        DOM.baseRows.appendChild(row);
+      }
+    }
+    for (const row of DOM.baseRows.children) {
+      const name = row.dataset.base;
+      row.classList.toggle('active', P.BASES[name] === prog.state.base);
+      const value = row.querySelector('.base-value');
+      value.textContent = all[name];
+      // 64 двоичных разряда не помещаются в узкую строку - шрифт ужимается, а не режется.
+      value.style.fontSize = '';
+      const fit = value.clientWidth / Math.max(1, value.scrollWidth);
+      if (fit < 1) value.style.fontSize = Math.max(6, Math.floor(12 * fit * 10) / 10) + 'px';
+    }
+  }
+
+  function pressProg(key) {
+    prog.press(key);
+    updateDisplay();
+    syncProgrammerKeys();
+    if (key === '=') animateResult();
   }
 
   // 2nd flips trig/log/power keys to their inverses.
@@ -121,6 +174,8 @@
     DOM.tabStd.classList.toggle('active', state.mode === 'standard');
     DOM.tabSci.classList.toggle('active', state.mode === 'scientific');
     DOM.tabFrac.classList.toggle('active', state.mode === 'fractions');
+    DOM.tabProg.classList.toggle('active', state.mode === 'programmer');
+    DOM.baseRows.classList.toggle('visible', state.mode === 'programmer');
     DOM.anglePill.classList.toggle('visible', state.mode === 'scientific');
     DOM.memRow.classList.toggle('visible', state.mode === 'scientific');
     renderKeys();
@@ -176,6 +231,16 @@
 
   function updateDisplay() {
     if (state.mode === 'fractions') { updateFractionsDisplay(); return; }
+    if (state.mode === 'programmer') {
+      DOM.historyLine.textContent = prog.expression() || ' ';
+      const text = prog.display();
+      DOM.mainResult.textContent = text;
+      adjustFontSize(text);
+      DOM.display.classList.toggle('error-glow', prog.state.error !== null);
+      setFractionLine('');
+      renderBaseRows();
+      return;
+    }
 
     const showExpr = state.expression && !state.justEvaluated && !state.hasError;
     const displayText = state.hasError
@@ -300,12 +365,19 @@
   });
   DOM.calcKeys.addEventListener('click', e => {
     const btn = e.target.closest('[data-key]');
-    if (btn) calc.pressKey(btn.dataset.key);
+    if (!btn || btn.disabled) return;
+    if (state.mode === 'programmer') pressProg(btn.dataset.key);
+    else calc.pressKey(btn.dataset.key);
+  });
+  DOM.baseRows.addEventListener('click', e => {
+    const row = e.target.closest('.base-row');
+    if (row) pressProg(row.dataset.base);
   });
 
   DOM.tabStd.addEventListener('click', () => calc.setMode('standard'));
   DOM.tabSci.addEventListener('click', () => calc.setMode('scientific'));
   DOM.tabFrac.addEventListener('click', () => calc.setMode('fraction'));
+  DOM.tabProg.addEventListener('click', () => calc.setMode('programmer'));
   DOM.anglePill.addEventListener('click', () => calc.cycleAngleMode());
 
   DOM.memPlus.addEventListener('click', calc.memAdd);
@@ -333,6 +405,18 @@
     '(': '(', ')': ')', '%': '%', '^': '^',
   };
   const FRACTION_KEYS = { ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', '/': 'a/b' };
+  // «Программист»: буквы a-f - цифры, & | ^ ~ - битовые операции, < и > - сдвиги.
+  const PROGRAMMER_KEYS = {
+    '+': '+', '-': '−', '*': '×', '/': '÷', '%': 'Mod',
+    '&': 'AND', '|': 'OR', '^': 'XOR', '~': 'NOT', '<': '<<', '>': '>>',
+    '(': '(', ')': ')', 'Enter': '=', '=': '=',
+    'Backspace': '⌫', 'Escape': 'AC', 'Delete': 'CE',
+  };
+  function programmerKey(e) {
+    if (e.ctrlKey || e.altKey || e.metaKey) return null;
+    if (e.key.length === 1 && P.digitValue(e.key) >= 0) return e.key.toUpperCase();
+    return PROGRAMMER_KEYS[e.key] || null;
+  }
 
   document.addEventListener('keydown', e => {
     // Открытый список тем закрывается Escape, а не стирает набранное (Escape = AC).
@@ -347,6 +431,19 @@
       return;
     }
     if (e.key === 'F1') { e.preventDefault(); calc.toggleMode(); return; }
+
+    if (state.mode === 'programmer') {
+      const pk = programmerKey(e);
+      if (pk === null) return;
+      e.preventDefault();
+      pressProg(pk);
+      const pb = DOM.calcKeys.querySelector(`[data-key="${CSS.escape(pk)}"]`);
+      if (pb && !pb.disabled) {
+        const r = pb.getBoundingClientRect();
+        spawnRipple(pb, r.left + r.width / 2, r.top + r.height / 2);
+      }
+      return;
+    }
 
     if (state.mode === 'fractions' && FRACTION_KEYS[e.key]) {
       e.preventDefault();

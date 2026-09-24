@@ -459,7 +459,7 @@
       historyLine: '',
       result: null,
       memory: 0,
-      mode: 'standard',           // 'standard' | 'scientific' | 'fractions'
+      mode: 'standard',           // 'standard' | 'scientific' | 'fractions' | 'programmer' (клавиши - в programmer-core.js)
       angleMode: 'deg',           // 'deg' | 'rad' | 'grad'
       fractionMode: false,
       altSet: false,
