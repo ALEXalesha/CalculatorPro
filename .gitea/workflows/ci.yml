@@ -1,0 +1,72 @@
+# Проверки на домашнем Gitea. Копия .github/workflows/ci.yml, отличие одно: задачи
+# идут на раннер ПК (метка windows), а не на windows-latest / ubuntu-latest - такие метки
+# есть только у раннера ноутбука, и без него задачи висели в очереди и отменялись.
+# Раз папка .gitea/workflows есть, Gitea берёт проверки только отсюда: выпуски и Pages -
+# дело GitHub, здесь их нет. Меняя проверки, править оба файла.
+
+# Проверки на каждый пуш, по задаче на калькулятор.
+#
+# Все три движка без UI: CalcPro.Core собран под обычный net8.0 без WPF, а
+# calc-core.js и calc-engine.js без DOM. Поэтому раннеры ubuntu. Бинарник
+# Электрона unit-тестам не нужен и не скачивается. e2e гоняют настоящую страницу
+# в окне Электрона и запускаются перед выпуском локально (build.ps1).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  wpf:
+    name: Calc Pro (C#)
+    runs-on: windows
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Тесты движка, тем и окна (xUnit + FsCheck)
+        run: dotnet test calcpro-wpf/tests/CalcPro.Tests --nologo
+
+  glass:
+    name: Calc Pro Glass
+    runs-on: windows
+    timeout-minutes: 10
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    defaults:
+      run:
+        working-directory: calcpro-glass
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: calcpro-glass/package-lock.json
+      - run: npm ci
+      - name: Тесты движка, тем, окна и свойства на fast-check
+        run: npm test
+
+  ios:
+    name: Calculator iOS 26
+    runs-on: windows
+    timeout-minutes: 10
+    env:
+      ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
+    defaults:
+      run:
+        working-directory: ios-calculator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ios-calculator/package-lock.json
+      - run: npm ci
+      - name: Тесты движка, тем, окна и свойства на fast-check
+        run: npm test
