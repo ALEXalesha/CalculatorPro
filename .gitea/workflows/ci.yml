@@ -25,9 +25,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "8.0.x"
+      # .NET на ПК уже стоит; setup-dotnet ставил бы его в Program Files, а прав на
+      # это у раннера нет.
       - name: Тесты движка, тем и окна (xUnit + FsCheck)
         run: dotnet test calcpro-wpf/tests/CalcPro.Tests --nologo
 
