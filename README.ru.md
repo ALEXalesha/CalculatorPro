@@ -12,6 +12,9 @@
 
 </div>
 
+[![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+Код, тесты и документация этого проекта написаны Claude (Anthropic) в Claude Code. Идеи, проверка и решения - Алексей.
+
 В каждом релизе у всех трёх есть portable-версия (один `.exe` без установки) и установщик.
 
 | Папка | Приложение | Стек | Что умеет |

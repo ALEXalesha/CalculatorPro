@@ -12,6 +12,9 @@
 
 </div>
 
+[![Built with Claude Code](https://img.shields.io/badge/Built_with-Claude_Code-D97757?logo=claude&logoColor=white)](https://claude.com/claude-code)
+Code, tests and docs are written by Claude (Anthropic) in Claude Code. Ideas, testing and decisions - Alexey.
+
 Every release has a portable `.exe` (no installation) and an installer for each of the three.
 
 ## Calc Pro: C# 12, WPF, .NET 8
