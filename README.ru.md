@@ -1,8 +1,10 @@
 <div align="center">
 
+<img src="calcpro-wpf/src/CalcPro.Wpf/Resources/app.png" width="96" alt="">
+
 # Calculators
 
-**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 701 тест, большая часть — свойства на случайных входах.**
+**Три настольных калькулятора для Windows в стиле Apple Liquid Glass: один на C# и WPF, два на Electron. У каждого свой движок выражений без `eval` и вместе 701 тест, большая часть - свойства на случайных входах.**
 
 [Скачать для Windows](https://github.com/ALEXalesha/CalculatorPro/releases/latest) &nbsp;·&nbsp; [English version of this file](README.md)
 
@@ -78,7 +80,7 @@ cd calcpro-glass;  npm test; npm run test:e2e # 213 unit + e2e в Electron
 cd ios-calculator; npm test; npm run test:e2e # 79 unit + e2e в Electron
 ```
 
-Основа — property-based тесты: генератор выдаёт тысячи случайных выражений и
+Основа - property-based тесты: генератор выдаёт тысячи случайных выражений и
 последовательностей нажатий, а тест проверяет законы и инварианты. Подробно в
 [docs/TESTING.md](docs/TESTING.md).
 

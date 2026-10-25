@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="calcpro-wpf/src/CalcPro.Wpf/Resources/app.png" width="96" alt="">
+
 # Calculators
 
 **Three desktop calculators for Windows in the Apple Liquid Glass style: one in C# and WPF, two in Electron. Each has its own expression engine with no `eval`, and 701 tests, most of them properties over random input.**
