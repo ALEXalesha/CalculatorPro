@@ -12,7 +12,7 @@ Windows-калькулятор в стиле Apple Liquid Glass. C# 12 + WPF н�
   `eval` и `DataTable.Compute`.
 - **Точные вычисления.** `decimal` везде, округление до 12 знаков (`MidpointRounding.ToEven`).
   `0.1 + 0.2 == 0.3` буквально. В `double` уходят только `sin/cos/log/exp`.
-- **Command Pattern для undo/redo.** Каждое нажатие — объект `ICalcCommand` с `Execute`/`Undo`.
+- **Command Pattern для undo/redo.** Каждое нажатие - объект `ICalcCommand` с `Execute`/`Undo`.
 - **Явный автомат состояний** `CalcPhase` с проверяемыми инвариантами (см. ниже).
 - **MVVM.** View только привязывается к ViewModel; в code-behind лишь анимации и меню тем.
 - **Режим «Программист»** (меню режимов: Standard, Scientific, Programmer). Целые 64 бита
@@ -30,8 +30,8 @@ dotnet test CalcPro.sln
 ..\build.ps1 -Only wpf        # portable .exe + установщик в ..\dist
 ```
 
-Portable — self-contained single-file (~50 МБ со сжатием), .NET на целевой машине не нужен.
-Установщик — Inno Setup (`installer\CalcPro.iss`); по умолчанию ставится для текущего
+Portable - self-contained single-file (~50 МБ со сжатием), .NET на целевой машине не нужен.
+Установщик - Inno Setup (`installer\CalcPro.iss`); по умолчанию ставится для текущего
 пользователя, без прав администратора.
 
 ## Структура
@@ -97,7 +97,7 @@ CalcPro.sln
 
 | Клавиша | Действие |
 |---|---|
-| `0`–`9`, `.`, `,` | цифры |
+| `0`-`9`, `.`, `,` | цифры |
 | `+` `-` `*` `/` | операции |
 | `Enter` | вычислить |
 | `Backspace` / `Delete` / `Esc` | стереть символ / C / AC |
