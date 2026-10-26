@@ -85,7 +85,7 @@ xUnit and FsCheck. A random expression tree printed with minimal brackets parses
 
 | Key | Action |
 |---|---|
-| `0`–`9`, `.`, `,` | digits |
+| `0`-`9`, `.`, `,` | digits |
 | `+` `-` `*` `/` | operators |
 | `Enter` | evaluate |
 | `Backspace` / `Delete` / `Esc` | delete a character / C / AC |

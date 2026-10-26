@@ -58,7 +58,7 @@ When the logic was moved out of the HTML into modules, the old inline script ran
 
 ## Keyboard
 
-`0–9 . ,` · `+ - * /` · `Enter` = · `Backspace` · `Esc` AC · `%` · `Esc` closes history.
+`0-9 . ,` · `+ - * /` · `Enter` = · `Backspace` · `Esc` AC · `%` · `Esc` closes history.
 
 ## Security
 
